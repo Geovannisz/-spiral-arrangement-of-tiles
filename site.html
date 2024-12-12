@@ -1,0 +1,484 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Gerador de Arranjo de Tiles</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.1/css/all.min.css">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f4f4;
+        }
+        .container {
+            width: 90%;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        h1 {
+            color: #333;
+        }
+        .content {
+            display: flex;
+            gap: 20px;
+        }
+        .parameters {
+            width: 25%;
+        }
+        .plot-container {
+            width: 75%;
+        }
+        label {
+            display: block;
+            margin-top: 10px;
+        }
+        input[type="number"], input[type="text"] {
+            width: 100px;
+        }
+        button {
+            margin-top: 20px;
+            padding: 10px 20px;
+            background-color: #5cb85c;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #4cae4c;
+        }
+        #plot {
+            width: 100%;
+            height: 560px;
+        }
+        .message {
+            margin-top: 10px;
+            padding: 10px;
+            background-color: #fdd;
+            border: 1px solid #faa;
+        }
+        .snippet-container {
+            margin-top: 20px;
+            position: relative;
+        }
+        textarea {
+            width: 100%;
+            height: 200px;
+            margin-top: 10px;
+            resize: vertical;
+            font-family: monospace;
+            font-size: 12px;
+            padding: 10px;
+            padding-right: 40px; /* Espaço para o botão de cópia */
+            border: 1px solid #ccc;
+        }
+        .copy-button {
+            position: absolute;
+            top: 20px;
+            right: 10px;
+            padding: 5px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            cursor: pointer;
+            border-radius: 5px;
+            z-index: 10; /* Garante que o botão fique sobre a textarea */
+        }
+        .copy-button:hover {
+            background-color: #367c39;
+        }
+        .copy-button i {
+            font-size: 16px;
+        }
+        .parameters-description {
+            margin-top: 20px;
+        }
+        .parameters-description h3 {
+            margin-bottom: 5px;
+        }
+        .parameters-description p {
+            font-size: 14px;
+            line-height: 1.5;
+        }
+    </style>
+    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+</head>
+<body>
+    <div class="container">
+        <h1>Gerador de Arranjo de Tiles</h1>
+
+        <div class="content">
+            <div class="parameters">
+                <label for="num_petals">Número de Pétalas:</label>
+                <input type="number" id="num_petals" value="6">
+
+                <label for="tiles_per_petal">Tiles por Pétala:</label>
+                <input type="number" id="tiles_per_petal" value="5">
+
+                <label for="base_radius">Raio Base (x tile_size):</label>
+                <input type="number" id="base_radius" value="2">
+
+                <label for="radius_growth_factor">Fator de Crescimento do Raio (x tile_size):</label>
+                <input type="number" id="radius_growth_factor" value="1.5">
+
+                <label for="angle_offset_factor">Fator de Offset do Ângulo:</label>
+                <input type="number" id="angle_offset_factor" value="0.08333">
+
+                <label for="angle_variation_factor">Fator de Variação do Ângulo:</label>
+                <input type="number" id="angle_variation_factor" value="0">
+
+                <label for="exponential_radius_factor">Fator Exponencial do Raio:</label>
+                <input type="number" id="exponential_radius_factor" value="0">
+
+                <label for="exponential_angle_factor">Fator Exponencial do Ângulo:</label>
+                <input type="number" id="exponential_angle_factor" value="0">
+
+                <label for="rotation_per_petal">Rotação por Pétala:</label>
+                <input type="number" id="rotation_per_petal" value="0">
+
+                <label for="center_tile">Tile Central:</label>
+                <input type="checkbox" id="center_tile" checked>
+
+                <label for="station_name">Nome da Estação:</label>
+                <input type="text" id="station_name" value="Station">
+
+                <button onclick="generatePlot()">Gerar Gráfico</button>
+
+                <div id="message-container"></div>
+            </div>
+
+            <div class="plot-container">
+                <div id="plot"></div>
+            </div>
+        </div>
+
+        <div class="snippet-container">
+            <textarea id="code-snippet" readonly></textarea>
+            <button class="copy-button" onclick="copySnippet()"><i class="fas fa-paste"></i></button>
+        </div>
+        <div class="parameters-description">
+            <h3>Descrição dos Parâmetros:</h3>
+            <p><b>Número de Pétalas:</b> Controla o número de espirais (pétalas) no arranjo.</p>
+            <p><b>Tiles por Pétala:</b> Define quantos tiles serão dispostos em cada pétala.</p>
+            <p><b>Raio Base (x tile_size):</b> O raio inicial do arranjo, medido a partir do centro até o início das pétalas. Multiplicado pelo tamanho do tile.</p>
+            <p><b>Fator de Crescimento do Raio (x tile_size):</b> Fator pelo qual o raio aumenta a cada novo tile dentro de uma pétala. Multiplicado pelo tamanho do tile.</p>
+            <p><b>Fator de Offset do Ângulo:</b> Determina o ângulo inicial para a disposição dos tiles em cada pétala.</p>
+            <p><b>Fator de Variação do Ângulo:</b> Adiciona uma variação angular adicional para cada tile, permitindo curvas mais complexas nas pétalas.</p>
+            <p><b>Fator Exponencial do Raio:</b> Aplica um crescimento exponencial ao raio, fazendo com que a distância entre os tiles aumente de forma não linear.</p>
+            <p><b>Fator Exponencial do Ângulo:</b> Introduz uma variação exponencial no ângulo, alterando a curvatura das pétalas de forma não linear.</p>
+            <p><b>Rotação por Pétala:</b> Aplica uma rotação adicional a cada pétala subsequente, criando um efeito de torção no arranjo.</p>
+            <p><b>Tile Central:</b> Adiciona um tile no centro do arranjo, servindo como ponto de referência.</p>
+            <p><b>Nome da Estação:</b> Um nome descritivo para o arranjo gerado.</p>
+        </div>
+    </div>
+
+    <script>
+        // ==================== Parâmetros do Tile ====================
+        const dx = 176.0695885;
+        const dy = 167.5843071;
+        const N = 2;
+        const M = 8;
+
+        // Cria o array do tile
+        let tile_array = createPlanarArray(dx, dy, N, M);
+        tile_array = tile_array.map(point => [point[0] - tile_array.reduce((sum, p) => sum + p[0], 0) / tile_array.length, point[1] - tile_array.reduce((sum, p) => sum + p[1], 0) / tile_array.length]);
+
+        const tile_size_x = Math.max(...tile_array.map(p => p[0])) - Math.min(...tile_array.map(p => p[0]));
+        const tile_size_y = Math.max(...tile_array.map(p => p[1])) - Math.min(...tile_array.map(p => p[1]));
+        const tile_size = Math.sqrt(tile_size_x ** 2 + tile_size_y ** 2);
+
+        // Dados fictícios para 'data' - substitua pelos seus dados reais, se necessário
+        // const data = [];
+        // for (let i = 0; i < 360; i++) {
+        //     data.push({
+        //         'Theta [deg]': i,
+        //         'Phi [deg]': i,
+        //         'rETheta [V]': Math.random(),
+        //         'rEPhi [V]': Math.random(),
+        //         'rETotal [V]': Math.random()
+        //     });
+        // }
+
+        function createPlanarArray(dx, dy, N, M) {
+            const array = [];
+            for (let i = 0; i < N; i++) {
+                for (let j = 0; j < M; j++) {
+                    array.push([i * dx, j * dy]);
+                }
+            }
+            return array;
+        }
+
+        function rotatePoints(points, angle) {
+            const R = [
+                [Math.cos(angle), -Math.sin(angle)],
+                [Math.sin(angle), Math.cos(angle)]
+            ];
+            return points.map(point => [
+                point[0] * R[0][0] + point[1] * R[0][1],
+                point[0] * R[1][0] + point[1] * R[1][1]
+            ]);
+        }
+        
+        // Como estamos convertendo para JavaScript puro, a função rotate_field não é mais necessária
+        // function rotateField(data, angle_rad) {
+        //     // ... Implementação em JavaScript, se você precisar rotacionar dados
+        // }
+
+        function isCollision(tile1_center, tile1_angle, tile2_center, tile2_angle, tile_array) {
+            const tile_size_x = Math.max(...tile_array.map(p => p[0])) - Math.min(...tile_array.map(p => p[0]));
+            const tile_size_y = Math.max(...tile_array.map(p => p[1])) - Math.min(...tile_array.map(p => p[1]));
+        
+            function createHitbox(center, angle, size_x, size_y) {
+                const half_x = size_x / 2;
+                const half_y = size_y / 2;
+        
+                let corners = [
+                    [-half_x, -half_y],
+                    [half_x, -half_y],
+                    [half_x, half_y],
+                    [-half_x, half_y]
+                ];
+        
+                const rotated_corners = rotatePoints(corners, angle);
+                return rotated_corners.map(corner => [corner[0] + center[0], corner[1] + center[1]]);
+            }
+        
+            const hitbox1 = createHitbox(tile1_center, tile1_angle, tile_size_x, tile_size_y);
+            const hitbox2 = createHitbox(tile2_center, tile2_angle, tile_size_x, tile_size_y);
+        
+            function separatingAxis(hitbox1, hitbox2) {
+                for (let i = 0; i < 4; i++) {
+                    const edge = [hitbox1[(i + 1) % 4][0] - hitbox1[i][0], hitbox1[(i + 1) % 4][1] - hitbox1[i][1]];
+                    const axis = [-edge[1], edge[0]];
+        
+                    const projection1 = hitbox1.map(point => point[0] * axis[0] + point[1] * axis[1]);
+                    const projection2 = hitbox2.map(point => point[0] * axis[0] + point[1] * axis[1]);
+        
+                    const min1 = Math.min(...projection1);
+                    const max1 = Math.max(...projection1);
+                    const min2 = Math.min(...projection2);
+                    const max2 = Math.max(...projection2);
+        
+                    if (max1 < min2 || max2 < min1) {
+                        return true;
+                    }
+                }
+                return false;
+            }
+        
+            return !(separatingAxis(hitbox1, hitbox2) || separatingAxis(hitbox2, hitbox1));
+        }
+
+        function createStationArray(tiles_config, tile_array) {
+            const array_tot = [];
+            const collision_messages = [];
+            const tile_array_centered = tile_array.map(point => [
+                point[0] - tile_array.reduce((sum, p) => sum + p[0], 0) / tile_array.length,
+                point[1] - tile_array.reduce((sum, p) => sum + p[1], 0) / tile_array.length
+            ]);
+        
+            for (let i = 0; i < tiles_config.length; i++) {
+                const tile_center = tiles_config[i][0];
+                const tile_angle = tiles_config[i][1];
+                let valid_position = true;
+        
+                for (let j = 0; j < i; j++) {
+                    const existing_tile_center = tiles_config[j][0];
+                    const existing_tile_angle = tiles_config[j][1];
+                    if (isCollision(tile_center, tile_angle, existing_tile_center, existing_tile_angle, tile_array)) {
+                        valid_position = false;
+                        break;
+                    }
+                }
+        
+                if (valid_position) {
+                    const rotated_tile = rotatePoints(tile_array_centered, tile_angle);
+                    const translated_tile = rotated_tile.map(point => [point[0] + tile_center[0], point[1] + tile_center[1]]);
+                    translated_tile.forEach(point => array_tot.push([...point, 0]));
+                } else {
+                    collision_messages.push(`Colisão detectada entre o tile ${i + 1} e outros tiles. Posição do tile ${i + 1} ignorada.`);
+                }
+            }
+        
+            return [array_tot, collision_messages];
+        }
+        
+
+        function generateSpiralTileArrangement(
+            num_petals = 6,
+            tiles_per_petal = 5,
+            base_radius = 2.0,
+            radius_growth_factor = 1.5,
+            angle_offset_factor = 1 / 12,
+            angle_variation_factor = 0.0,
+            exponential_radius_factor = 0.0,
+            exponential_angle_factor = 0.0,
+            rotation_per_petal = 0.0,
+            center_tile = true,
+            station_name = ''
+        ) {
+            const tile_arrangement = [];
+
+            if (center_tile) {
+                tile_arrangement.push([[0, 0], 0]);
+            }
+
+            for (let p = 0; p < num_petals; p++) {
+                const petal_angle = p * (2 * Math.PI / num_petals) + p * rotation_per_petal;
+                for (let i = 0; i < tiles_per_petal; i++) {
+                    const r = (base_radius + i * radius_growth_factor) * (1 + exponential_radius_factor) ** i;
+                    const angle = (petal_angle + i * Math.PI * angle_offset_factor + i * angle_variation_factor) * (1 + exponential_angle_factor) ** i;
+
+                    const x = r * Math.cos(angle);
+                    const y = r * Math.sin(angle);
+                    const orientation_angle = angle + Math.PI / 2;
+
+                    tile_arrangement.push([[x, y], orientation_angle]);
+                }
+            }
+
+            return tile_arrangement;
+        }
+
+        function generatePlot() {
+            const numPetals = parseFloat(document.getElementById('num_petals').value);
+            const tilesPerPetal = parseFloat(document.getElementById('tiles_per_petal').value);
+            const baseRadius = parseFloat(document.getElementById('base_radius').value);
+            const radiusGrowthFactor = parseFloat(document.getElementById('radius_growth_factor').value);
+            const angleOffsetFactor = parseFloat(document.getElementById('angle_offset_factor').value);
+            const angleVariationFactor = parseFloat(document.getElementById('angle_variation_factor').value);
+            const exponentialRadiusFactor = parseFloat(document.getElementById('exponential_radius_factor').value);
+            const exponentialAngleFactor = parseFloat(document.getElementById('exponential_angle_factor').value);
+            const rotationPerPetal = parseFloat(document.getElementById('rotation_per_petal').value);
+            const centerTile = document.getElementById('center_tile').checked;
+            const stationName = document.getElementById('station_name').value;
+
+            // Adaptação dos parâmetros para a função
+            const adaptedBaseRadius = baseRadius * tile_size;
+            const adaptedRadiusGrowthFactor = radiusGrowthFactor * tile_size;
+
+            const tileArrangement = generateSpiralTileArrangement(
+                numPetals,
+                tilesPerPetal,
+                adaptedBaseRadius,
+                adaptedRadiusGrowthFactor,
+                angleOffsetFactor,
+                angleVariationFactor,
+                exponentialRadiusFactor,
+                exponentialAngleFactor,
+                rotationPerPetal,
+                centerTile,
+                stationName
+            );
+
+            const [station, collisionMessages] = createStationArray(tileArrangement, tile_array);
+
+            displayPlot(station, collisionMessages, stationName);
+            updateCodeSnippet();
+        }
+
+        function displayPlot(stationData, collisionMessages, stationName) {
+            const xValues = stationData.map(point => point[0]);
+            const yValues = stationData.map(point => point[1]);
+
+            const plotData = [{
+                x: xValues,
+                y: yValues,
+                mode: 'markers',
+                type: 'scatter'
+            }];
+
+            const layout = {
+                title: stationName,
+                autosize: true,
+                xaxis: {
+                    scaleanchor: "y",
+                    scaleratio: 1
+                },
+                yaxis: {
+                    scaleanchor: "x",
+                    scaleratio: 1
+                }
+            };
+
+            Plotly.newPlot('plot', plotData, layout);
+
+            // Exibe mensagens de colisão
+            const messageContainer = document.getElementById('message-container');
+            messageContainer.innerHTML = '';
+            if (collisionMessages && collisionMessages.length > 0) {
+                collisionMessages.forEach(message => {
+                    displayMessage(message, 'warning');
+                });
+            } else {
+                displayMessage('Nenhuma colisão detectada.', 'success');
+            }
+        }
+
+        function displayMessage(message, type) {
+            const messageContainer = document.getElementById('message-container');
+            const div = document.createElement('div');
+            div.className = 'message';
+            if (type === 'error') {
+                div.style.backgroundColor = '#fdd';
+                div.style.borderColor = '#faa';
+            } else if (type === 'warning') {
+                div.style.backgroundColor = '#ffd';
+                div.style.borderColor = '#ffa';
+            } else {
+                div.style.backgroundColor = '#dfd';
+                div.style.borderColor = '#afa';
+            }
+            div.textContent = message;
+            messageContainer.appendChild(div);
+        }
+
+        function updateCodeSnippet() {
+            const numPetals = document.getElementById('num_petals').value;
+            const tilesPerPetal = document.getElementById('tiles_per_petal').value;
+            const baseRadius = document.getElementById('base_radius').value;
+            const radiusGrowthFactor = document.getElementById('radius_growth_factor').value;
+            const angleOffsetFactor = document.getElementById('angle_offset_factor').value;
+            const angleVariationFactor = document.getElementById('angle_variation_factor').value;
+            const exponentialRadiusFactor = document.getElementById('exponential_radius_factor').value;
+            const exponentialAngleFactor = document.getElementById('exponential_angle_factor').value;
+            const rotationPerPetal = document.getElementById('rotation_per_petal').value;
+            const centerTile = document.getElementById('center_tile').checked;
+            const stationName = document.getElementById('station_name').value;
+
+            const snippet = `array_tiles_station = generate_spiral_tile_arrangement(
+    num_petals=${numPetals},
+    tiles_per_petal=${tilesPerPetal},
+    base_radius=${baseRadius} * tile_size,
+    radius_growth_factor=${radiusGrowthFactor} * tile_size,
+    angle_offset_factor=${angleOffsetFactor},
+    angle_variation_factor=${angleVariationFactor},
+    exponential_radius_factor=${exponentialRadiusFactor},
+    exponential_angle_factor=${exponentialAngleFactor},
+    rotation_per_petal=${rotationPerPetal},
+    center_tile=${centerTile},
+    station_name='${stationName}'
+)`;
+            document.getElementById('code-snippet').value = snippet;
+        }
+
+        let copyIconTimeout;
+
+        function copySnippet() {
+            const snippetTextarea = document.getElementById('code-snippet');
+            snippetTextarea.select();
+            document.execCommand('copy');
+
+            const copyButton = document.querySelector('.copy-button i');
+            copyButton.classList.remove('fa-paste');
+            copyButton.classList.add('fa-check');
+
+            clearTimeout(copyIconTimeout);
+            copyIconTimeout = setTimeout(() => {
+                copyButton.classList.remove('fa-check');
+                copyButton.classList.add('fa-paste');
+            }, 2000);
+        }
+    </script>
+</body>
+</html>
