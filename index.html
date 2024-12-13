@@ -103,6 +103,7 @@
         }
         #plot {
             width: 100%;
+            height: 600px;
             border: 1px solid #ced4da;
             border-radius: 8px;
         }
@@ -488,26 +489,33 @@
             const xValues = stationData.map(point => point[0]);
             const yValues = stationData.map(point => point[1]);
         
-            // Encontrar os limites do gráfico
+            // Encontrar os limites do gráfico e o centro
             let minX = Math.min(...xValues);
             let maxX = Math.max(...xValues);
             let minY = Math.min(...yValues);
             let maxY = Math.max(...yValues);
+            let centerX = (minX + maxX) / 2;
+            let centerY = (minY + maxY) / 2;
         
-            // Adicionar margem para garantir que os tiles nas bordas sejam visíveis
-            const margin = Math.max(tile_size_x, tile_size_y);
-            minX -= margin;
-            maxX += margin;
-            minY -= margin;
-            maxY += margin;
+            // Calcular a maior distância do centro para um ponto
+            let maxDistance = 0;
+            for (let i = 0; i < xValues.length; i++) {
+                const distance = Math.sqrt((xValues[i] - centerX) ** 2 + (yValues[i] - centerY) ** 2);
+                maxDistance = Math.max(maxDistance, distance);
+            }
         
-            // Calcular o tamanho do gráfico dinamicamente
-            const plotWidth = maxX - minX;
-            const plotHeight = maxY - minY;
-            const aspectRatio = plotWidth / plotHeight;
-            const plotContainer = document.getElementById('plot');
-            plotContainer.style.width = `${Math.max(plotWidth, 400)}px`;
-            plotContainer.style.height = `${Math.max(plotHeight, 400)}px`;
+            // Adicionar margem dinâmica
+            const margin = maxDistance * 0.1; // 10% da maior distância
+        
+            // Recalcular os limites com a margem
+            minX = centerX - maxDistance - margin;
+            maxX = centerX + maxDistance + margin;
+            minY = centerY - maxDistance - margin;
+            maxY = centerY + maxDistance + margin;
+        
+            // Ajustar o centro do gráfico
+            centerX = (minX + maxX) / 2;
+            centerY = (minY + maxY) / 2;
         
             const plotData = [{
                 x: xValues,
@@ -528,9 +536,9 @@
                         color: '#343a40'
                     }
                 },
-                autosize: true, // Importante para o redimensionamento automático
+                autosize: true,
                 xaxis: {
-                    range: [minX, maxX], // Definir os limites do eixo x
+                    range: [minX, maxX],
                     scaleanchor: "y",
                     scaleratio: 1,
                     showgrid: false,
@@ -545,7 +553,7 @@
                     }
                 },
                 yaxis: {
-                    range: [minY, maxY], // Definir os limites do eixo y
+                    range: [minY, maxY],
                     scaleanchor: "x",
                     scaleratio: 1,
                     showgrid: false,
