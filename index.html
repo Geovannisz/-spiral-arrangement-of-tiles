@@ -489,33 +489,20 @@
             const xValues = stationData.map(point => point[0]);
             const yValues = stationData.map(point => point[1]);
         
-            // Encontrar os limites do gráfico e o centro
+            // Encontrar os limites do gráfico
             let minX = Math.min(...xValues);
             let maxX = Math.max(...xValues);
             let minY = Math.min(...yValues);
             let maxY = Math.max(...yValues);
-            let centerX = (minX + maxX) / 2;
-            let centerY = (minY + maxY) / 2;
         
-            // Calcular a maior distância do centro para um ponto
-            let maxDistance = 0;
-            for (let i = 0; i < xValues.length; i++) {
-                const distance = Math.sqrt((xValues[i] - centerX) ** 2 + (yValues[i] - centerY) ** 2);
-                maxDistance = Math.max(maxDistance, distance);
-            }
-        
-            // Adicionar margem dinâmica
-            const margin = maxDistance * 0.1; // 10% da maior distância
-        
-            // Recalcular os limites com a margem
-            minX = centerX - maxDistance - margin;
-            maxX = centerX + maxDistance + margin;
-            minY = centerY - maxDistance - margin;
-            maxY = centerY + maxDistance + margin;
-        
-            // Ajustar o centro do gráfico
-            centerX = (minX + maxX) / 2;
-            centerY = (minY + maxY) / 2;
+            // Adicionar margem adaptativa para garantir que os tiles nas bordas sejam visíveis
+            const marginFactor = 0.15; // Fator de escala para a margem
+            const marginX = Math.max(Math.abs(maxX - minX) * marginFactor, tile_size_x);
+            const marginY = Math.max(Math.abs(maxY - minY) * marginFactor, tile_size_y);
+            minX -= marginX;
+            maxX += marginX;
+            minY -= marginY;
+            maxY += marginY;
         
             const plotData = [{
                 x: xValues,
@@ -538,7 +525,7 @@
                 },
                 autosize: true,
                 xaxis: {
-                    range: [minX, maxX],
+                    range: [minX, maxX], // Definir os limites do eixo x
                     scaleanchor: "y",
                     scaleratio: 1,
                     showgrid: false,
@@ -553,7 +540,7 @@
                     }
                 },
                 yaxis: {
-                    range: [minY, maxY],
+                    range: [minY, maxY], // Definir os limites do eixo y
                     scaleanchor: "x",
                     scaleratio: 1,
                     showgrid: false,
@@ -570,10 +557,11 @@
                 plot_bgcolor: '#fff',
                 paper_bgcolor: '#fff',
                 margin: {
-                    l: 40,
-                    r: 40,
-                    b: 40,
-                    t: 60
+                    l: 20,
+                    r: 20,
+                    b: 30,
+                    t: 70,
+                    pad: 0 // preenchimento entre os eixos e a área do gráfico
                 },
                 hovermode: 'closest'
             };
