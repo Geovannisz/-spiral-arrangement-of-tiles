@@ -5,20 +5,26 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.1/css/all.min.css">
     <style>
         body {
-            font-family: Arial, sans-serif;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             margin: 0;
             padding: 0;
-            background-color: #f4f4f4;
+            background-color: #f8f9fa;
+            color: #343a40;
         }
         .container {
             width: 90%;
-            margin: 0 auto;
+            max-width: 1200px;
+            margin: 20px auto;
             padding: 20px;
+            background-color: white;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            border-radius: 8px;
         }
         h1 {
-            color: #333;
-            margin-bottom: 20px;
-            text-align: center; /* Centraliza o título em todas as resoluções */
+            color: #007bff;
+            margin-bottom: 30px;
+            text-align: center;
+            font-weight: 600;
         }
         .content {
             display: flex;
@@ -27,7 +33,7 @@
         }
         .parameters {
             width: 30%;
-            min-width: 250px;
+            min-width: 280px;
         }
         .plot-container {
             width: 70%;
@@ -36,7 +42,9 @@
         }
         label {
             display: block;
-            margin-top: 10px;
+            margin-top: 15px;
+            font-weight: 500;
+            color: #495057;
             position: relative;
         }
         label span {
@@ -46,109 +54,144 @@
             transform: translateX(-50%);
             width: max-content;
             max-width: 300px;
-            background-color: #333;
+            background-color: #343a40;
             color: #fff;
-            padding: 5px 10px;
-            border-radius: 5px;
+            padding: 8px 12px;
+            border-radius: 6px;
             visibility: hidden;
             opacity: 0;
             transition: visibility 0s, opacity 0.3s ease;
             z-index: 1;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+            font-size: 14px;
         }
         label:hover span {
             visibility: visible;
             opacity: 1;
         }
         input[type="number"], input[type="text"] {
-            width: 100px;
+            width: calc(100% - 22px);
+            padding: 8px 10px;
+            margin-top: 5px;
+            border: 1px solid #ced4da;
+            border-radius: 4px;
+            font-size: 16px;
+        }
+        input[type="checkbox"] {
+            margin-top: 5px;
+            accent-color: #007bff;
         }
         button {
-            margin-top: 20px;
-            padding: 10px 20px;
-            background-color: #5cb85c;
+            margin-top: 30px;
+            padding: 12px 24px;
+            background-color: #28a745;
             color: white;
             border: none;
             cursor: pointer;
+            border-radius: 4px;
+            font-size: 18px;
+            transition: background-color 0.3s ease;
         }
         button:hover {
-            background-color: #4cae4c;
+            background-color: #218838;
         }
         #plot {
-            width: 800px;
-            height: 800px;
+            width: 100%;
+            height: 600px;
+            border: 1px solid #ced4da;
+            border-radius: 4px;
         }
         .message {
-            margin-top: 10px;
+            margin-top: 15px;
             padding: 10px;
-            background-color: #fdd;
-            border: 1px solid #faa;
+            border: 1px solid;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+        .message-success {
+            background-color: #d4edda;
+            border-color: #c3e6cb;
+            color: #155724;
+        }
+        .message-warning {
+            background-color: #fff3cd;
+            border-color: #ffeeba;
+            color: #856404;
+        }
+        .message-error {
+            background-color: #f8d7da;
+            border-color: #f5c6cb;
+            color: #721c24;
         }
         .snippet-container {
-            margin-top: 20px;
+            margin-top: 30px;
             position: relative;
         }
         textarea {
-            width: 100%;
-            height: 200px;
+            width: calc(100% - 22px);
+            height: 220px;
             margin-top: 10px;
-            resize: vertical;
-            font-family: monospace;
-            font-size: 12px;
             padding: 10px;
-            padding-right: 40px;
-            border: 1px solid #ccc;
+            border: 1px solid #ced4da;
+            border-radius: 4px;
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 14px;
+            resize: vertical;
         }
         .copy-button {
             position: absolute;
-            top: 20px;
+            top: 30px;
             right: 10px;
-            padding: 5px;
-            background-color: #4CAF50;
+            padding: 8px 12px;
+            background-color: #007bff;
             color: white;
             border: none;
             cursor: pointer;
-            border-radius: 5px;
+            border-radius: 4px;
             z-index: 10;
+            transition: background-color 0.3s ease;
         }
         .copy-button:hover {
-            background-color: #367c39;
+            background-color: #0056b3;
         }
         .copy-button i {
-            font-size: 16px;
+            font-size: 18px;
         }
 
         /* Media Queries para Responsividade */
         @media (max-width: 768px) {
             .content {
-                flex-direction: column; /* Altera para layout vertical */
-                align-items: center; /* Centraliza os itens */
+                flex-direction: column;
+                align-items: center;
             }
             .parameters, .plot-container {
-                width: 100%; /* Ocupa toda a largura */
-                min-width: 0; /* Remove a largura mínima */
+                width: 95%;
+                min-width: 0;
             }
             .plot-container {
-                margin-top: 20px; /* Adiciona espaço acima do gráfico */
+                margin-top: 20px;
             }
             #plot {
-                width: 100%; /* Ajusta a largura do gráfico */
-                height: 400px; /* Reduz a altura do gráfico */
+                height: 450px;
             }
         }
 
         @media (max-width: 480px) {
             h1 {
-                font-size: 24px; /* Reduz o tamanho do título */
+                font-size: 22px;
             }
             label span {
-                max-width: 90%; /* Aumenta a largura do tooltip */
-                font-size: 12px; /* Reduz o tamanho da fonte do tooltip */
+                max-width: 90%;
+                font-size: 12px;
             }
             input[type="number"], input[type="text"] {
-                width: 80px; /* Reduz a largura dos inputs */
+                font-size: 14px;
             }
             #plot {
-                height: 300px; /* Reduz ainda mais a altura do gráfico */
+                height: 350px;
+            }
+            textarea {
+                font-size: 12px;
             }
         }
     </style>
@@ -160,17 +203,17 @@
 
         <div class="content">
             <div class="parameters">
-                <label for="num_petals">
+                <label for="num_spirals">
                     Número de Espirais:
                     <span>Controla o número de espirais no arranjo.</span>
                 </label>
-                <input type="number" id="num_petals" value="6">
+                <input type="number" id="num_spirals" value="6">
 
-                <label for="tiles_per_petal">
+                <label for="tiles_per_spiral">
                     Tiles por Espiral:
                     <span>Define quantos tiles serão dispostos em cada espiral.</span>
                 </label>
-                <input type="number" id="tiles_per_petal" value="5">
+                <input type="number" id="tiles_per_spiral" value="5">
 
                 <label for="base_radius">
                     Raio Base (x tile_size):
@@ -208,11 +251,11 @@
                 </label>
                 <input type="number" id="exponential_angle_factor" value="0">
 
-                <label for="rotation_per_petal">
+                <label for="rotation_per_spiral">
                     Rotação por Espiral:
                     <span>Aplica uma rotação adicional a cada espiral subsequente, criando um efeito de torção no arranjo.</span>
                 </label>
-                <input type="number" id="rotation_per_petal" value="0">
+                <input type="number" id="rotation_per_spiral" value="0">
 
                 <label for="center_tile">
                     Tile Central:
@@ -370,15 +413,15 @@
         }
 
         function generateSpiralTileArrangement(
-            num_petals = 6,
-            tiles_per_petal = 5,
+            num_spirals = 6,
+            tiles_per_spiral = 5,
             base_radius = 2.0,
             radius_growth_factor = 1.5,
             angle_offset_factor = 1 / 12,
             angle_variation_factor = 0.0,
             exponential_radius_factor = 0.0,
             exponential_angle_factor = 0.0,
-            rotation_per_petal = 0.0,
+            rotation_per_spiral = 0.0,
             center_tile = true,
             station_name = ''
         ) {
@@ -388,11 +431,11 @@
                 tile_arrangement.push([[0, 0], 0]);
             }
 
-            for (let p = 0; p < num_petals; p++) {
-                const petal_angle = p * (2 * Math.PI / num_petals) + p * rotation_per_petal;
-                for (let i = 0; i < tiles_per_petal; i++) {
+            for (let p = 0; p < num_spirals; p++) {
+                const spiral_angle = p * (2 * Math.PI / num_spirals) + p * rotation_per_spiral;
+                for (let i = 0; i < tiles_per_spiral; i++) {
                     const r = (base_radius + i * radius_growth_factor) * (1 + exponential_radius_factor) ** i;
-                    const angle = (petal_angle + i * Math.PI * angle_offset_factor + i * angle_variation_factor) * (1 + exponential_angle_factor) ** i;
+                    const angle = (spiral_angle + i * Math.PI * angle_offset_factor + i * angle_variation_factor) * (1 + exponential_angle_factor) ** i;
 
                     const x = r * Math.cos(angle);
                     const y = r * Math.sin(angle);
@@ -406,15 +449,15 @@
         }
 
         function generatePlot() {
-            const numPetals = parseFloat(document.getElementById('num_petals').value);
-            const tilesPerPetal = parseFloat(document.getElementById('tiles_per_petal').value);
+            const numSpirals = parseFloat(document.getElementById('num_spirals').value);
+            const tilesPerSpiral = parseFloat(document.getElementById('tiles_per_spiral').value);
             const baseRadius = parseFloat(document.getElementById('base_radius').value);
             const radiusGrowthFactor = parseFloat(document.getElementById('radius_growth_factor').value);
             const angleOffsetFactor = parseFloat(document.getElementById('angle_offset_factor').value);
             const angleVariationFactor = parseFloat(document.getElementById('angle_variation_factor').value);
             const exponentialRadiusFactor = parseFloat(document.getElementById('exponential_radius_factor').value);
             const exponentialAngleFactor = parseFloat(document.getElementById('exponential_angle_factor').value);
-            const rotationPerPetal = parseFloat(document.getElementById('rotation_per_petal').value);
+            const rotationPerSpiral = parseFloat(document.getElementById('rotation_per_spiral').value);
             const centerTile = document.getElementById('center_tile').checked;
             const stationName = document.getElementById('station_name').value;
 
@@ -423,15 +466,15 @@
             const adaptedRadiusGrowthFactor = radiusGrowthFactor * tile_size;
 
             const tileArrangement = generateSpiralTileArrangement(
-                numPetals,
-                tilesPerPetal,
+                numSpirals,
+                tilesPerSpiral,
                 adaptedBaseRadius,
                 adaptedRadiusGrowthFactor,
                 angleOffsetFactor,
                 angleVariationFactor,
                 exponentialRadiusFactor,
                 exponentialAngleFactor,
-                rotationPerPetal,
+                rotationPerSpiral,
                 centerTile,
                 stationName
             );
@@ -450,20 +493,49 @@
                 x: xValues,
                 y: yValues,
                 mode: 'markers',
-                type: 'scatter'
+                type: 'scatter',
+                marker: {
+                    size: 8,
+                    color: '#007bff'
+                }
             }];
 
             const layout = {
-                title: stationName,
+                title: {
+                    text: stationName,
+                    font: {
+                        size: 20,
+                        color: '#343a40'
+                    }
+                },
                 autosize: true,
                 xaxis: {
                     scaleanchor: "y",
-                    scaleratio: 1
+                    scaleratio: 1,
+                    showgrid: false,
+                    zeroline: false,
+                    showline: false,
+                    ticks: '',
+                    showticklabels: false
                 },
                 yaxis: {
                     scaleanchor: "x",
-                    scaleratio: 1
-                }
+                    scaleratio: 1,
+                    showgrid: false,
+                    zeroline: false,
+                    showline: false,
+                    ticks: '',
+                    showticklabels: false
+                },
+                margin: {
+                    l: 50,
+                    r: 50,
+                    b: 50,
+                    t: 50,
+                    pad: 10
+                },
+                plot_bgcolor: '#f8f9fa',
+                paper_bgcolor: '#fff'
             };
 
             Plotly.newPlot('plot', plotData, layout);
@@ -483,45 +555,35 @@
         function displayMessage(message, type) {
             const messageContainer = document.getElementById('message-container');
             const div = document.createElement('div');
-            div.className = 'message';
-            if (type === 'error') {
-                div.style.backgroundColor = '#fdd';
-                div.style.borderColor = '#faa';
-            } else if (type === 'warning') {
-                div.style.backgroundColor = '#ffd';
-                div.style.borderColor = '#ffa';
-            } else {
-                div.style.backgroundColor = '#dfd';
-                div.style.borderColor = '#afa';
-            }
+            div.className = `message message-${type}`;
             div.textContent = message;
             messageContainer.appendChild(div);
         }
 
         function updateCodeSnippet() {
-            const numPetals = document.getElementById('num_petals').value;
-            const tilesPerPetal = document.getElementById('tiles_per_petal').value;
+            const numSpirals = document.getElementById('num_spirals').value;
+            const tilesPerSpiral = document.getElementById('tiles_per_spiral').value;
             const baseRadius = document.getElementById('base_radius').value;
             const radiusGrowthFactor = document.getElementById('radius_growth_factor').value;
             const angleOffsetFactor = document.getElementById('angle_offset_factor').value;
             const angleVariationFactor = document.getElementById('angle_variation_factor').value;
             const exponentialRadiusFactor = document.getElementById('exponential_radius_factor').value;
             const exponentialAngleFactor = document.getElementById('exponential_angle_factor').value;
-            const rotationPerPetal = document.getElementById('rotation_per_petal').value;
+            const rotationPerSpiral = document.getElementById('rotation_per_spiral').value;
             const centerTile = document.getElementById('center_tile').checked;
             const stationName = document.getElementById('station_name').value;
 
             const snippet = `array_tiles_station = generate_spiral_tile_arrangement(
-    num_petals=${numPetals},
-    tiles_per_petal=${tilesPerPetal},
+    num_spirals=${numSpirals},
+    tiles_per_spiral=${tilesPerSpiral},
     base_radius=${baseRadius} * tile_size,
     radius_growth_factor=${radiusGrowthFactor} * tile_size,
     angle_offset_factor=${angleOffsetFactor},
     angle_variation_factor=${angleVariationFactor},
     exponential_radius_factor=${exponentialRadiusFactor},
     exponential_angle_factor=${exponentialAngleFactor},
-    rotation_per_petal=${rotationPerPetal},
-    center_tile=${centerTile},
+    rotation_per_spiral=${rotationPerSpiral},
+    center_tile=${centerTile ? 'True' : 'False'},
     station_name='${stationName}'
 )`;
             document.getElementById('code-snippet').value = snippet;
