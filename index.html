@@ -18,7 +18,7 @@
         h1 {
             color: #333;
             margin-bottom: 20px;
-            text-align: center; /* Centraliza o título em todas as telas */
+            text-align: center; /* Centraliza o título em todas as resoluções */
         }
         .content {
             display: flex;
@@ -120,20 +120,35 @@
         /* Media Queries para Responsividade */
         @media (max-width: 768px) {
             .content {
-                flex-direction: column; /* Muda o layout para vertical */
+                flex-direction: column; /* Altera para layout vertical */
                 align-items: center; /* Centraliza os itens */
             }
-            .parameters {
-                width: 100%; /* Ocupa a largura total */
+            .parameters, .plot-container {
+                width: 100%; /* Ocupa toda a largura */
                 min-width: 0; /* Remove a largura mínima */
             }
             .plot-container {
-                width: 100%; /* Ocupa a largura total */
+                margin-top: 20px; /* Adiciona espaço acima do gráfico */
             }
             #plot {
                 width: 100%; /* Ajusta a largura do gráfico */
-                height: auto; /* Altura automática para manter a proporção */
-                max-height: 500px; /* Altura máxima para evitar que fique muito grande */
+                height: 400px; /* Reduz a altura do gráfico */
+            }
+        }
+
+        @media (max-width: 480px) {
+            h1 {
+                font-size: 24px; /* Reduz o tamanho do título */
+            }
+            label span {
+                max-width: 90%; /* Aumenta a largura do tooltip */
+                font-size: 12px; /* Reduz o tamanho da fonte do tooltip */
+            }
+            input[type="number"], input[type="text"] {
+                width: 80px; /* Reduz a largura dos inputs */
+            }
+            #plot {
+                height: 300px; /* Reduz ainda mais a altura do gráfico */
             }
         }
     </style>
