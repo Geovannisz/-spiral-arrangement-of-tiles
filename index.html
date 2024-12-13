@@ -28,7 +28,7 @@
         }
         .content {
             display: flex;
-            align-items: start;
+            align-items: flex-start; /* Alterado para alinhar ao topo */
             gap: 30px;
         }
         .parameters {
@@ -42,6 +42,7 @@
             width: 70%;
             display: flex;
             justify-content: center;
+            align-items: center; /* Centralizar verticalmente */
             border-radius: 8px;
             overflow: hidden;
         }
@@ -106,7 +107,8 @@
             height: 600px;
             border: 1px solid #ced4da;
             border-radius: 8px;
-            margin: 0 auto;
+            display: flex;
+            align-items: center; /* Centralizar o gráfico verticalmente */
         }
         .message {
             margin-top: 15px;
@@ -496,12 +498,14 @@
             let minY = Math.min(...yValues);
             let maxY = Math.max(...yValues);
         
-            // Adicionar margem para garantir que os tiles nas bordas sejam visíveis
-            const margin = Math.max(tile_size_x, tile_size_y) * 0.75;
-            minX -= margin;
-            maxX += margin;
-            minY -= margin;
-            maxY += margin;
+            // Adicionar margem adaptativa para garantir que os tiles nas bordas sejam visíveis
+            const marginFactor = 0.15; // Fator de escala para a margem
+            const marginX = Math.max(Math.abs(maxX - minX) * marginFactor, tile_size_x);
+            const marginY = Math.max(Math.abs(maxY - minY) * marginFactor, tile_size_y);
+            minX -= marginX;
+            maxX += marginX;
+            minY -= marginY;
+            maxY += marginY;
         
             const plotData = [{
                 x: xValues,
@@ -556,16 +560,22 @@
                 plot_bgcolor: '#fff',
                 paper_bgcolor: '#fff',
                 margin: {
-                    l: 0,
-                    r: 0,
-                    b: 0,
-                    t: 60,
-                    pad: 0
+                    l: 20,
+                    r: 20,
+                    b: 30,
+                    t: 70,
+                    pad: 0 // preenchimento entre os eixos e a área do gráfico
                 },
                 hovermode: 'closest'
             };
         
-            Plotly.newPlot('plot', plotData, layout);
+             // Verificar se o elemento 'plot' existe antes de chamar Plotly.newPlot
+            const plotElement = document.getElementById('plot');
+            if (plotElement) {
+               Plotly.newPlot('plot', plotData, layout);
+            } else {
+              console.error("Elemento com ID 'plot' não encontrado.");
+            }
         
             // Exibe mensagens de colisão
             const messageContainer = document.getElementById('message-container');
