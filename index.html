@@ -12,28 +12,46 @@
         }
         .container {
             width: 90%;
-            margin: 0 auto;
+            margin: 20px auto;
             padding: 20px;
+            border: 1px solid #ccc;
+            border-radius: 10px;
+            background-color: #fff;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
         }
         h1 {
             color: #333;
+            text-align: center;
+            margin-bottom: 20px;
         }
         .content {
             display: flex;
             gap: 20px;
+            justify-content: space-around;
+            align-items: flex-start;
         }
         .parameters {
-            width: 25%;
+            width: 40%;
         }
         .plot-container {
-            width: 75%;
+            width: 60%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
         }
         label {
             display: block;
             margin-top: 10px;
+            font-weight: bold;
+            color: #555;
+            position: relative; /* Para o tooltip */
         }
         input[type="number"], input[type="text"] {
             width: 100px;
+            padding: 5px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            margin-top: 5px;
         }
         button {
             margin-top: 20px;
@@ -42,19 +60,22 @@
             color: white;
             border: none;
             cursor: pointer;
+            border-radius: 5px;
+            transition: background-color 0.3s ease;
         }
         button:hover {
             background-color: #4cae4c;
         }
         #plot {
-            width: 100%;
-            height: 560px;
+            width: 600px;
+            height: 600px;
         }
         .message {
             margin-top: 10px;
             padding: 10px;
             background-color: #fdd;
             border: 1px solid #faa;
+            border-radius: 5px;
         }
         .snippet-container {
             margin-top: 20px;
@@ -70,6 +91,7 @@
             padding: 10px;
             padding-right: 40px; /* Espaço para o botão de cópia */
             border: 1px solid #ccc;
+            border-radius: 5px;
         }
         .copy-button {
             position: absolute;
@@ -89,15 +111,32 @@
         .copy-button i {
             font-size: 16px;
         }
-        .parameters-description {
-            margin-top: 20px;
+        .tooltip {
+            position: absolute;
+            background-color: #333;
+            color: white;
+            padding: 5px 10px;
+            border-radius: 5px;
+            z-index: 1;
+            bottom: 125%;
+            left: 50%;
+            margin-left: -75px;
+            opacity: 0;
+            transition: opacity 0.3s;
+            white-space: nowrap;
         }
-        .parameters-description h3 {
-            margin-bottom: 5px;
+        label:hover .tooltip {
+            opacity: 1;
         }
-        .parameters-description p {
-            font-size: 14px;
-            line-height: 1.5;
+        .tooltip::after {
+            content: "";
+            position: absolute;
+            top: 100%;
+            left: 50%;
+            margin-left: -5px;
+            border-width: 5px;
+            border-style: solid;
+            border-color: #333 transparent transparent transparent;
         }
     </style>
     <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
@@ -108,37 +147,70 @@
 
         <div class="content">
             <div class="parameters">
-                <label for="num_petals">Número de Espirais:</label>
+                <label for="num_petals">
+                    Número de Espirais:
+                    <span class="tooltip">Controla o número de espirais no arranjo.</span>
+                </label>
                 <input type="number" id="num_petals" value="6">
 
-                <label for="tiles_per_petal">Tiles por Espiral:</label>
+                <label for="tiles_per_petal">
+                    Tiles por Espiral:
+                    <span class="tooltip">Define quantos tiles serão dispostos em cada espiral.</span>
+                </label>
                 <input type="number" id="tiles_per_petal" value="5">
 
-                <label for="base_radius">Raio Base (x tile_size):</label>
+                <label for="base_radius">
+                    Raio Base (x tile_size):
+                    <span class="tooltip">O raio inicial do arranjo, medido a partir do centro até o início das espirais. Multiplicado pelo tamanho do tile.</span>
+                </label>
                 <input type="number" id="base_radius" value="2">
 
-                <label for="radius_growth_factor">Fator de Crescimento do Raio (x tile_size):</label>
+                <label for="radius_growth_factor">
+                    Fator de Crescimento do Raio (x tile_size):
+                    <span class="tooltip">Fator pelo qual o raio aumenta a cada novo tile dentro de uma espiral. Multiplicado pelo tamanho do tile.</span>
+                </label>
                 <input type="number" id="radius_growth_factor" value="1.5">
 
-                <label for="angle_offset_factor">Fator de Offset do Ângulo:</label>
+                <label for="angle_offset_factor">
+                    Fator de Offset do Ângulo:
+                    <span class="tooltip">Determina o ângulo inicial para a disposição dos tiles em cada espiral.</span>
+                </label>
                 <input type="number" id="angle_offset_factor" value="0.08333">
 
-                <label for="angle_variation_factor">Fator de Variação do Ângulo:</label>
+                <label for="angle_variation_factor">
+                    Fator de Variação do Ângulo:
+                    <span class="tooltip">Adiciona uma variação angular adicional para cada tile, permitindo curvas mais complexas nas espirais.</span>
+                </label>
                 <input type="number" id="angle_variation_factor" value="0">
 
-                <label for="exponential_radius_factor">Fator Exponencial do Raio:</label>
+                <label for="exponential_radius_factor">
+                    Fator Exponencial do Raio:
+                    <span class="tooltip">Aplica um crescimento exponencial ao raio, fazendo com que a distância entre os tiles aumente de forma não linear.</span>
+                </label>
                 <input type="number" id="exponential_radius_factor" value="0">
 
-                <label for="exponential_angle_factor">Fator Exponencial do Ângulo:</label>
+                <label for="exponential_angle_factor">
+                    Fator Exponencial do Ângulo:
+                    <span class="tooltip">Introduz uma variação exponencial no ângulo, alterando a curvatura das espirais de forma não linear.</span>
+                </label>
                 <input type="number" id="exponential_angle_factor" value="0">
 
-                <label for="rotation_per_petal">Rotação por Espiral:</label>
+                <label for="rotation_per_petal">
+                    Rotação por Espiral:
+                    <span class="tooltip">Aplica uma rotação adicional a cada espiral subsequente, criando um efeito de torção no arranjo.</span>
+                </label>
                 <input type="number" id="rotation_per_petal" value="0">
 
-                <label for="center_tile">Tile Central:</label>
+                <label for="center_tile">
+                    Tile Central:
+                    <span class="tooltip">Adiciona um tile no centro do arranjo, servindo como ponto de referência.</span>
+                </label>
                 <input type="checkbox" id="center_tile" checked>
 
-                <label for="station_name">Nome da Estação:</label>
+                <label for="station_name">
+                    Nome da Estação:
+                    <span class="tooltip">Um nome descritivo para o arranjo gerado.</span>
+                </label>
                 <input type="text" id="station_name" value="Station">
 
                 <button onclick="generatePlot()">Gerar Station</button>
@@ -154,20 +226,6 @@
         <div class="snippet-container">
             <textarea id="code-snippet" readonly></textarea>
             <button class="copy-button" onclick="copySnippet()"><i class="fas fa-paste"></i></button>
-        </div>
-        <div class="parameters-description">
-            <h3>Descrição dos Parâmetros:</h3>
-            <p><b>Número de Espirais:</b> Controla o número de espirais no arranjo.</p>
-            <p><b>Tiles por Espiral:</b> Define quantos tiles serão dispostos em cada espiral.</p>
-            <p><b>Raio Base (x tile_size):</b> O raio inicial do arranjo, medido a partir do centro até o início das espirais. Multiplicado pelo tamanho do tile.</p>
-            <p><b>Fator de Crescimento do Raio (x tile_size):</b> Fator pelo qual o raio aumenta a cada novo tile dentro de uma espiral. Multiplicado pelo tamanho do tile.</p>
-            <p><b>Fator de Offset do Ângulo:</b> Determina o ângulo inicial para a disposição dos tiles em cada espiral.</p>
-            <p><b>Fator de Variação do Ângulo:</b> Adiciona uma variação angular adicional para cada tile, permitindo curvas mais complexas nas espirais.</p>
-            <p><b>Fator Exponencial do Raio:</b> Aplica um crescimento exponencial ao raio, fazendo com que a distância entre os tiles aumente de forma não linear.</p>
-            <p><b>Fator Exponencial do Ângulo:</b> Introduz uma variação exponencial no ângulo, alterando a curvatura das espirais de forma não linear.</p>
-            <p><b>Rotação por Espiral:</b> Aplica uma rotação adicional a cada espiral subsequente, criando um efeito de torção no arranjo.</p>
-            <p><b>Tile Central:</b> Adiciona um tile no centro do arranjo, servindo como ponto de referência.</p>
-            <p><b>Nome da Estação:</b> Um nome descritivo para o arranjo gerado.</p>
         </div>
     </div>
 
@@ -185,18 +243,6 @@
         const tile_size_x = Math.max(...tile_array.map(p => p[0])) - Math.min(...tile_array.map(p => p[0]));
         const tile_size_y = Math.max(...tile_array.map(p => p[1])) - Math.min(...tile_array.map(p => p[1]));
         const tile_size = Math.sqrt(tile_size_x ** 2 + tile_size_y ** 2);
-
-        // Dados fictícios para 'data' - substitua pelos seus dados reais, se necessário
-        // const data = [];
-        // for (let i = 0; i < 360; i++) {
-        //     data.push({
-        //         'Theta [deg]': i,
-        //         'Phi [deg]': i,
-        //         'rETheta [V]': Math.random(),
-        //         'rEPhi [V]': Math.random(),
-        //         'rETotal [V]': Math.random()
-        //     });
-        // }
 
         function createPlanarArray(dx, dy, N, M) {
             const array = [];
@@ -218,11 +264,6 @@
                 point[0] * R[1][0] + point[1] * R[1][1]
             ]);
         }
-        
-        // Como estamos convertendo para JavaScript puro, a função rotate_field não é mais necessária
-        // function rotateField(data, angle_rad) {
-        //     // ... Implementação em JavaScript, se você precisar rotacionar dados
-        // }
 
         function isCollision(tile1_center, tile1_angle, tile2_center, tile2_angle, tile_array) {
             const tile_size_x = Math.max(...tile_array.map(p => p[0])) - Math.min(...tile_array.map(p => p[0]));
@@ -287,6 +328,7 @@
                     const existing_tile_angle = tiles_config[j][1];
                     if (isCollision(tile_center, tile_angle, existing_tile_center, existing_tile_angle, tile_array)) {
                         valid_position = false;
+                        collision_messages.push(`Colisão detectada entre o tile ${i + 1} e outros tiles. Posição do tile ${i + 1} ignorada. Centro do tile: [${tile_center[0].toFixed(2)}, ${tile_center[1].toFixed(2)}]`);
                         break;
                     }
                 }
@@ -295,14 +337,11 @@
                     const rotated_tile = rotatePoints(tile_array_centered, tile_angle);
                     const translated_tile = rotated_tile.map(point => [point[0] + tile_center[0], point[1] + tile_center[1]]);
                     translated_tile.forEach(point => array_tot.push([...point, 0]));
-                } else {
-                    collision_messages.push(`Colisão detectada entre o tile ${i + 1} e outros tiles. Posição do tile ${i + 1} ignorada.`);
                 }
             }
         
             return [array_tot, collision_messages];
         }
-        
 
         function generateSpiralTileArrangement(
             num_petals = 6,
