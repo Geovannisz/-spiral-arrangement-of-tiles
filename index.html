@@ -102,9 +102,9 @@
             background-color: #218838;
         }
         #plot {
-            width: 800px; /* Largura desejada */
-            height: 600px; /* Altura desejada */
-            margin: 0 auto;
+            width: 80%; /* Ajuste a largura conforme necessário */
+            height: 500px; /* Ajuste a altura conforme necessário */
+            margin: 0 auto; /* Mantém o gráfico centralizado horizontalmente */
             border: 1px solid #ced4da;
             border-radius: 8px;
         }
@@ -492,24 +492,20 @@
         function displayPlot(stationData, collisionMessages, stationName) {
             const xValues = stationData.map(point => point[0]);
             const yValues = stationData.map(point => point[1]);
-
+        
             // Encontrar os limites do gráfico
             let minX = Math.min(...xValues);
             let maxX = Math.max(...xValues);
             let minY = Math.min(...yValues);
             let maxY = Math.max(...yValues);
-
+        
             // Adicionar margem para garantir que os tiles nas bordas sejam visíveis
             const margin = Math.max(tile_size_x, tile_size_y) * 0.75;
             minX -= margin;
             maxX += margin;
             minY -= margin;
             maxY += margin;
-
-            // Calcular o centro do gráfico
-            const centerX = (minX + maxX) / 2;
-            const centerY = (minY + maxY) / 2;
-
+        
             const plotData = [{
                 x: xValues,
                 y: yValues,
@@ -520,7 +516,7 @@
                     color: '#007bff'
                 }
             }];
-
+        
             const layout = {
                 title: {
                     text: stationName,
@@ -531,9 +527,7 @@
                 },
                 autosize: true,
                 xaxis: {
-                    // Definir o centro do eixo x
-                    range: [minX, maxX],
-                    fixedrange: true, // Impede que o usuário altere a escala do eixo X com zoom ou pan
+                    range: [minX, maxX], // Definir os limites do eixo x
                     scaleanchor: "y",
                     scaleratio: 1,
                     showgrid: false,
@@ -546,12 +540,9 @@
                         size: 12,
                         color: '#495057'
                     }
-
                 },
                 yaxis: {
-                    // Definir o centro do eixo y
-                    range: [minY, maxY],
-                    fixedrange: true, // Impede que o usuário altere a escala do eixo Y com zoom ou pan
+                    range: [minY, maxY], // Definir os limites do eixo y
                     scaleanchor: "x",
                     scaleratio: 1,
                     showgrid: false,
@@ -576,9 +567,9 @@
                 },
                 hovermode: 'closest'
             };
-
+        
             Plotly.newPlot('plot', plotData, layout);
-
+        
             // Exibe mensagens de colisão
             const messageContainer = document.getElementById('message-container');
             messageContainer.innerHTML = '';
