@@ -160,17 +160,17 @@
 
         <div class="content">
             <div class="parameters">
-                <label for="num_petals">
+                <label for="num_spirals">
                     Número de Espirais:
                     <span>Controla o número de espirais no arranjo.</span>
                 </label>
-                <input type="number" id="num_petals" value="6">
+                <input type="number" id="num_spirals" value="6">
 
-                <label for="tiles_per_petal">
+                <label for="tiles_per_spiral">
                     Tiles por Espiral:
                     <span>Define quantos tiles serão dispostos em cada espiral.</span>
                 </label>
-                <input type="number" id="tiles_per_petal" value="5">
+                <input type="number" id="tiles_per_spiral" value="5">
 
                 <label for="base_radius">
                     Raio Base (x tile_size):
@@ -208,11 +208,11 @@
                 </label>
                 <input type="number" id="exponential_angle_factor" value="0">
 
-                <label for="rotation_per_petal">
+                <label for="rotation_per_spiral">
                     Rotação por Espiral:
                     <span>Aplica uma rotação adicional a cada espiral subsequente, criando um efeito de torção no arranjo.</span>
                 </label>
-                <input type="number" id="rotation_per_petal" value="0">
+                <input type="number" id="rotation_per_spiral" value="0">
 
                 <label for="center_tile">
                     Tile Central:
@@ -370,15 +370,15 @@
         }
 
         function generateSpiralTileArrangement(
-            num_petals = 6,
-            tiles_per_petal = 5,
+            num_spirals = 6,
+            tiles_per_spiral = 5,
             base_radius = 2.0,
             radius_growth_factor = 1.5,
             angle_offset_factor = 1 / 12,
             angle_variation_factor = 0.0,
             exponential_radius_factor = 0.0,
             exponential_angle_factor = 0.0,
-            rotation_per_petal = 0.0,
+            rotation_per_spiral = 0.0,
             center_tile = true,
             station_name = ''
         ) {
@@ -388,11 +388,11 @@
                 tile_arrangement.push([[0, 0], 0]);
             }
 
-            for (let p = 0; p < num_petals; p++) {
-                const petal_angle = p * (2 * Math.PI / num_petals) + p * rotation_per_petal;
-                for (let i = 0; i < tiles_per_petal; i++) {
+            for (let p = 0; p < num_spirals; p++) {
+                const spiral_angle = p * (2 * Math.PI / num_spirals) + p * rotation_per_spiral;
+                for (let i = 0; i < tiles_per_spiral; i++) {
                     const r = (base_radius + i * radius_growth_factor) * (1 + exponential_radius_factor) ** i;
-                    const angle = (petal_angle + i * Math.PI * angle_offset_factor + i * angle_variation_factor) * (1 + exponential_angle_factor) ** i;
+                    const angle = (spiral_angle + i * Math.PI * angle_offset_factor + i * angle_variation_factor) * (1 + exponential_angle_factor) ** i;
 
                     const x = r * Math.cos(angle);
                     const y = r * Math.sin(angle);
@@ -406,15 +406,15 @@
         }
 
         function generatePlot() {
-            const numPetals = parseFloat(document.getElementById('num_petals').value);
-            const tilesPerPetal = parseFloat(document.getElementById('tiles_per_petal').value);
+            const numSpirals = parseFloat(document.getElementById('num_spirals').value);
+            const tilesPerSpiral = parseFloat(document.getElementById('tiles_per_spiral').value);
             const baseRadius = parseFloat(document.getElementById('base_radius').value);
             const radiusGrowthFactor = parseFloat(document.getElementById('radius_growth_factor').value);
             const angleOffsetFactor = parseFloat(document.getElementById('angle_offset_factor').value);
             const angleVariationFactor = parseFloat(document.getElementById('angle_variation_factor').value);
             const exponentialRadiusFactor = parseFloat(document.getElementById('exponential_radius_factor').value);
             const exponentialAngleFactor = parseFloat(document.getElementById('exponential_angle_factor').value);
-            const rotationPerPetal = parseFloat(document.getElementById('rotation_per_petal').value);
+            const rotationPerSpiral = parseFloat(document.getElementById('rotation_per_spiral').value);
             const centerTile = document.getElementById('center_tile').checked;
             const stationName = document.getElementById('station_name').value;
 
@@ -423,15 +423,15 @@
             const adaptedRadiusGrowthFactor = radiusGrowthFactor * tile_size;
 
             const tileArrangement = generateSpiralTileArrangement(
-                numPetals,
-                tilesPerPetal,
+                numSpirals,
+                tilesPerSpiral,
                 adaptedBaseRadius,
                 adaptedRadiusGrowthFactor,
                 angleOffsetFactor,
                 angleVariationFactor,
                 exponentialRadiusFactor,
                 exponentialAngleFactor,
-                rotationPerPetal,
+                rotationPerSpiral,
                 centerTile,
                 stationName
             );
@@ -499,28 +499,28 @@
         }
 
         function updateCodeSnippet() {
-            const numPetals = document.getElementById('num_petals').value;
-            const tilesPerPetal = document.getElementById('tiles_per_petal').value;
+            const numSpirals = document.getElementById('num_spirals').value;
+            const tilesPerSpiral = document.getElementById('tiles_per_spiral').value;
             const baseRadius = document.getElementById('base_radius').value;
             const radiusGrowthFactor = document.getElementById('radius_growth_factor').value;
             const angleOffsetFactor = document.getElementById('angle_offset_factor').value;
             const angleVariationFactor = document.getElementById('angle_variation_factor').value;
             const exponentialRadiusFactor = document.getElementById('exponential_radius_factor').value;
             const exponentialAngleFactor = document.getElementById('exponential_angle_factor').value;
-            const rotationPerPetal = document.getElementById('rotation_per_petal').value;
+            const rotationPerSpiral = document.getElementById('rotation_per_spiral').value;
             const centerTile = document.getElementById('center_tile').checked;
             const stationName = document.getElementById('station_name').value;
 
             const snippet = `array_tiles_station = generate_spiral_tile_arrangement(
-    num_petals=${numPetals},
-    tiles_per_petal=${tilesPerPetal},
+    num_spirals=${numSpirals},
+    tiles_per_spiral=${tilesPerSpiral},
     base_radius=${baseRadius} * tile_size,
     radius_growth_factor=${radiusGrowthFactor} * tile_size,
     angle_offset_factor=${angleOffsetFactor},
     angle_variation_factor=${angleVariationFactor},
     exponential_radius_factor=${exponentialRadiusFactor},
     exponential_angle_factor=${exponentialAngleFactor},
-    rotation_per_petal=${rotationPerPetal},
+    rotation_per_spiral=${rotationPerSpiral},
     center_tile=${centerTile},
     station_name='${stationName}'
 )`;
