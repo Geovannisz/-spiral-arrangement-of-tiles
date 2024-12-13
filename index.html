@@ -4,6 +4,7 @@
     <title>Gerador de Arranjo de Tiles</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.1/css/all.min.css">
     <style>
+        /* Estilos (como antes) */
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             margin: 0;
@@ -760,175 +761,175 @@
             return 20 * Math.log10(value);
         }
 
-        // Função para ler e processar os dados do arquivo CSV
-        function readTable(file, callback) {
-            Papa.parse(file, {
-                download: true,
-                header: true,
-                dynamicTyping: true,
-                complete: function(results) {
-                    const data = results.data;
-                    for (let i = 0; i < data.length; i++) {
-                        for (let col of ['re(rETheta)', 'im(rETheta)', 're(rEPhi)', 'im(rEPhi)']) {
-                            if (`${col} [mV]` in data[i]) {
-                                data[i][`${col} [V]`] = data[i][`${col} [mV]`] * 1e-3;
-                                delete data[i][`${col} [mV]`];
-                            }
-                        }
-        
-                        data[i]['rETheta [V]'] = { real: data[i]['re(rETheta) [V]'], imag: data[i]['im(rETheta) [V]'] };
-                        data[i]['rEPhi [V]'] = { real: data[i]['re(rEPhi) [V]'], imag: data[i]['im(rEPhi) [V]'] };
-        
-                        delete data[i]['re(rETheta) [V]'];
-                        delete data[i]['im(rETheta) [V]'];
-                        delete data[i]['re(rEPhi) [V]'];
-                        delete data[i]['im(rEPhi) [V]'];
-        
-                        data[i]['rETotal [V]'] = calculateMagnitude(data[i]['rETheta [V]'].real, data[i]['rEPhi [V]'].real);
-                    }
-                    callback(data);
-                }
-            });
-        }
-        
+        // URLs dos arquivos CSV no GitHub
+        const csv_files = [
+            "https://raw.githubusercontent.com/Geovannisz/spiral-arrangement-of-tiles/main/data/rE_table_vivaldi.csv",
+            "https://raw.githubusercontent.com/Geovannisz/spiral-arrangement-of-tiles/main/data/rE_table_vivaldi_1.5GHz.csv",
+            "https://raw.githubusercontent.com/Geovannisz/spiral-arrangement-of-tiles/main/data/rE_table_vivaldi_1.4GHz.csv",
+            "https://raw.githubusercontent.com/Geovannisz/spiral-arrangement-of-tiles/main/data/rE_table_vivaldi_1.3GHz.csv",
+            "https://raw.githubusercontent.com/Geovannisz/spiral-arrangement-of-tiles/main/data/rE_table_vivaldi_1.2GHz.csv",
+            "https://raw.githubusercontent.com/Geovannisz/spiral-arrangement-of-tiles/main/data/rE_table_vivaldi_1.1GHz.csv",
+            "https://raw.githubusercontent.com/Geovannisz/spiral-arrangement-of-tiles/main/data/rE_table_vivaldi_0.9GHz.csv",
+            "https://raw.githubusercontent.com/Geovannisz/spiral-arrangement-of-tiles/main/data/rE_table_vivaldi_0.8GHz.csv",
+            "https://raw.githubusercontent.com/Geovannisz/spiral-arrangement-of-tiles/main/data/rE_table_vivaldi_0.7GHz.csv",
+            "https://raw.githubusercontent.com/Geovannisz/spiral-arrangement-of-tiles/main/data/rE_table_vivaldi_0.6GHz.csv",
+            "https://raw.githubusercontent.com/Geovannisz/spiral-arrangement-of-tiles/main/data/rE_table_vivaldi_0.5GHz.csv"
+        ];
+
         let data_cache = {};  // Cache para armazenar os dados lidos
 
-        function generateInteractivePlot() {
-            const stationName = document.getElementById('station_name').value;
-            const phi_angle = parseFloat(document.getElementById('phi_angle').value);
+        // Função para ler e processar múltiplos arquivos CSV
+        function readMultipleTables(files, callback) {
+            let filesProcessed = 0;
+            const totalFiles = files.length;
+            const allData = {};
         
-            // Mostra a barra de progresso
             const progressBarContainer = document.querySelector('.progress-bar-container');
             const progressBar = document.querySelector('.progress-bar');
             progressBarContainer.style.display = 'block';
             progressBar.style.width = '0%';
         
-            if (!data_cache[stationName]) {
-                const numSpirals = parseFloat(document.getElementById('num_spirals').value);
-                const tilesPerSpiral = parseFloat(document.getElementById('tiles_per_spiral').value);
-                const baseRadius = parseFloat(document.getElementById('base_radius').value);
-                const radiusGrowthFactor = parseFloat(document.getElementById('radius_growth_factor').value);
-                const angleOffsetFactor = parseFloat(document.getElementById('angle_offset_factor').value);
-                const angleVariationFactor = parseFloat(document.getElementById('angle_variation_factor').value);
-                const exponentialRadiusFactor = parseFloat(document.getElementById('exponential_radius_factor').value);
-                const exponentialAngleFactor = parseFloat(document.getElementById('exponential_angle_factor').value);
-                const rotationPerSpiral = parseFloat(document.getElementById('rotation_per_spiral').value);
-                const centerTile = document.getElementById('center_tile').checked;
+            files.forEach(file => {
+                Papa.parse(file, {
+                    download: true,
+                    header: true,
+                    dynamicTyping: true,
+                    complete: function(results) {
+                        const data = results.data;
+                        for (let i = 0; i < data.length; i++) {
+                            for (let col of ['re(rETheta)', 'im(rETheta)', 're(rEPhi)', 'im(rEPhi)']) {
+                                if (`${col} [mV]` in data[i]) {
+                                    data[i][`${col} [V]`] = data[i][`${col} [mV]`] * 1e-3;
+                                    delete data[i][`${col} [mV]`];
+                                }
+                            }
         
-                const adaptedBaseRadius = baseRadius * tile_size;
-                const adaptedRadiusGrowthFactor = radiusGrowthFactor * tile_size;
+                            data[i]['rETheta [V]'] = { real: data[i]['re(rETheta) [V]'], imag: data[i]['im(rETheta) [V]'] };
+                            data[i]['rEPhi [V]'] = { real: data[i]['re(rEPhi) [V]'], imag: data[i]['im(rEPhi) [V]'] };
         
-                const tileArrangement = generateSpiralTileArrangement(
-                    numSpirals,
-                    tilesPerSpiral,
-                    adaptedBaseRadius,
-                    adaptedRadiusGrowthFactor,
-                    angleOffsetFactor,
-                    angleVariationFactor,
-                    exponentialRadiusFactor,
-                    exponentialAngleFactor,
-                    rotationPerSpiral,
-                    centerTile,
-                    stationName
-                );
+                            delete data[i]['re(rETheta) [V]'];
+                            delete data[i]['im(rETheta) [V]'];
+                            delete data[i]['re(rEPhi) [V]'];
+                            delete data[i]['im(rEPhi) [V]'];
         
-                const [station, collisionMessages] = createStationArray(tileArrangement, tile_array);
-                const numTiles = station.length / 16;
-                let progress = 0;
+                            data[i]['rETotal [V]'] = calculateMagnitude(data[i]['rETheta [V]'].real, data[i]['rEPhi [V]'].real);
+                        }
         
-                readTable("https://raw.githubusercontent.com/yourusername/yourrepository/main/data/rE_table_vivaldi.csv", function(data) {
-                    // Separar os dados por phi
-                    const uniquePhis = [...new Set(data.map(item => item['Phi [deg]']))];
-                    const dataByPhi = {};
-                    uniquePhis.forEach(phi => {
-                        dataByPhi[phi] = data.filter(item => item['Phi [deg]'] === phi);
-                    });
+                        // Extrai a frequência do nome do arquivo
+                        const filename = file.split('/').pop();
+                        const freqMatch = filename.match(/(\d+(?:\.\d+)?)(?:GHz)?/);
+                        const frequency = freqMatch ? freqMatch[1] : 'default';
         
-                    const [station, rotated_fields] = createStationArrayWithRotatedFields(tileArrangement, tile_array, dataByPhi[phi_angle]);
-                    const theta = dataByPhi[phi_angle].map(item => item['Theta [deg]']).filter((item, index, self) => self.indexOf(item) === index);
-                    const phi = dataByPhi[phi_angle].map(item => item['Phi [deg]']).filter((item, index, self) => self.indexOf(item) === index);
+                        allData[frequency] = data;
+                        filesProcessed++;
         
-                    const AF = computeAF(theta, phi, station);
-                    const applied_field = applyAFOnField(dataByPhi[phi_angle], AF);
+                        // Atualiza a barra de progresso
+                        const progress = Math.round((filesProcessed / totalFiles) * 100);
+                        progressBar.style.width = `${progress}%`;
         
-                    // Filtrar os valores de Theta entre -90 e 90 graus
-                    const filtered_applied_field = applied_field.filter(item => item['Theta [deg]'] >= -90 && item['Theta [deg]'] <= 90);
-        
-                    const x_values = filtered_applied_field.map(item => item['Theta [deg]']);
-                    const y_values = filtered_applied_field.map(item => db(item['rETotal [V]']));
-        
-                    const trace = {
-                        x: x_values,
-                        y: y_values,
-                        mode: 'lines',
-                        name: stationName
-                    };
-        
-                    const layout = {
-                        title: `Campo Elétrico Total para Phi = ${phi_angle}°`,
-                        xaxis: { title: 'Theta (deg)' },
-                        yaxis: { title: 'rETotal (dBV)' },
-                        font: {
-                            family: "Courier New, monospace",
-                            size: 12,
-                            color: '#f8f8f2'
-                        },
-                        plot_bgcolor: '#282a36',
-                        paper_bgcolor: '#282a36',
-                        xaxis: { gridcolor: '#44475a' },
-                        yaxis: { gridcolor: '#44475a' }
-                    };
-        
-                    Plotly.newPlot('interactive-plot', [trace], layout);
-        
-                    // Esconde a barra de progresso
-                    progressBarContainer.style.display = 'none';
-        
-                    // Atualiza o cache
-                    data_cache[stationName] = {
-                        station: station,
-                        rotated_fields: rotated_fields,
-                        AF: AF,
-                        applied_field: applied_field
-                    };
+                        if (filesProcessed === totalFiles) {
+                            progressBarContainer.style.display = 'none';
+                            callback(allData);
+                        }
+                    }
+                });
+            });
+        }
+
+        function generateInteractivePlot() {
+            const stationName = document.getElementById('station_name').value;
+            const phi_angle = parseFloat(document.getElementById('phi_angle').value);
+
+            // Verifica se os dados já foram carregados
+            if (Object.keys(data_cache).length === 0) {
+                // Carrega todos os arquivos CSV
+                readMultipleTables(csv_files, function(allData) {
+                    data_cache = allData;
+                    createPlotWithLoadedData(stationName, phi_angle);
                 });
             } else {
                 // Usa os dados do cache
-                const cached_data = data_cache[stationName];
-        
-                // Filtrar os valores de Theta entre -90 e 90 graus
-                const filtered_applied_field = cached_data.applied_field.filter(item => item['Theta [deg]'] >= -90 && item['Theta [deg]'] <= 90);
-        
-                const x_values = filtered_applied_field.map(item => item['Theta [deg]']);
-                const y_values = filtered_applied_field.map(item => db(item['rETotal [V]']));
-        
-                const trace = {
-                    x: x_values,
-                    y: y_values,
-                    mode: 'lines',
-                    name: stationName
-                };
-        
-                const layout = {
-                    title: `Campo Elétrico Total para Phi = ${phi_angle}°`,
-                    xaxis: { title: 'Theta (deg)' },
-                    yaxis: { title: 'rETotal (dBV)' },
-                    font: {
-                        family: "Courier New, monospace",
-                        size: 12,
-                        color: '#f8f8f2'
-                    },
-                    plot_bgcolor: '#282a36',
-                    paper_bgcolor: '#282a36',
-                    xaxis: { gridcolor: '#44475a' },
-                    yaxis: { gridcolor: '#44475a' }
-                };
-        
-                Plotly.newPlot('interactive-plot', [trace], layout);
-        
-                // Esconde a barra de progresso
-                progressBarContainer.style.display = 'none';
+                createPlotWithLoadedData(stationName, phi_angle);
             }
+        }
+
+        function createPlotWithLoadedData(stationName, phi_angle) {
+            // Aqui você pode escolher qual frequência usar, por exemplo, 'default' ou '1.5'
+            const selectedFrequency = 'default'; // ou '1.5', '1.4', etc.
+            const data = data_cache[selectedFrequency];
+        
+            // Continua o processo de geração do gráfico interativo
+            const numSpirals = parseFloat(document.getElementById('num_spirals').value);
+            const tilesPerSpiral = parseFloat(document.getElementById('tiles_per_spiral').value);
+            const baseRadius = parseFloat(document.getElementById('base_radius').value);
+            const radiusGrowthFactor = parseFloat(document.getElementById('radius_growth_factor').value);
+            const angleOffsetFactor = parseFloat(document.getElementById('angle_offset_factor').value);
+            const angleVariationFactor = parseFloat(document.getElementById('angle_variation_factor').value);
+            const exponentialRadiusFactor = parseFloat(document.getElementById('exponential_radius_factor').value);
+            const exponentialAngleFactor = parseFloat(document.getElementById('exponential_angle_factor').value);
+            const rotationPerSpiral = parseFloat(document.getElementById('rotation_per_spiral').value);
+            const centerTile = document.getElementById('center_tile').checked;
+        
+            const adaptedBaseRadius = baseRadius * tile_size;
+            const adaptedRadiusGrowthFactor = radiusGrowthFactor * tile_size;
+        
+            const tileArrangement = generateSpiralTileArrangement(
+                numSpirals,
+                tilesPerSpiral,
+                adaptedBaseRadius,
+                adaptedRadiusGrowthFactor,
+                angleOffsetFactor,
+                angleVariationFactor,
+                exponentialRadiusFactor,
+                exponentialAngleFactor,
+                rotationPerSpiral,
+                centerTile,
+                stationName
+            );
+        
+            // Separar os dados por phi
+            const uniquePhis = [...new Set(data.map(item => item['Phi [deg]']))];
+            const dataByPhi = {};
+            uniquePhis.forEach(phi => {
+                dataByPhi[phi] = data.filter(item => item['Phi [deg]'] === phi);
+            });
+        
+            const [station, rotated_fields] = createStationArrayWithRotatedFields(tileArrangement, tile_array, dataByPhi[phi_angle]);
+            const theta = dataByPhi[phi_angle].map(item => item['Theta [deg]']).filter((item, index, self) => self.indexOf(item) === index);
+            const phi = dataByPhi[phi_angle].map(item => item['Phi [deg]']).filter((item, index, self) => self.indexOf(item) === index);
+        
+            const AF = computeAF(theta, phi, station);
+            const applied_field = applyAFOnField(dataByPhi[phi_angle], AF);
+        
+            // Filtrar os valores de Theta entre -90 e 90 graus
+            const filtered_applied_field = applied_field.filter(item => item['Theta [deg]'] >= -90 && item['Theta [deg]'] <= 90);
+        
+            const x_values = filtered_applied_field.map(item => item['Theta [deg]']);
+            const y_values = filtered_applied_field.map(item => db(item['rETotal [V]']));
+        
+            const trace = {
+                x: x_values,
+                y: y_values,
+                mode: 'lines',
+                name: stationName
+            };
+        
+            const layout = {
+                title: `Campo Elétrico Total para Phi = ${phi_angle}° (Freq: ${selectedFrequency})`,
+                xaxis: { title: 'Theta (deg)' },
+                yaxis: { title: 'rETotal (dBV)' },
+                font: {
+                    family: "Courier New, monospace",
+                    size: 12,
+                    color: '#f8f8f2'
+                },
+                plot_bgcolor: '#282a36',
+                paper_bgcolor: '#282a36',
+                xaxis: { gridcolor: '#44475a' },
+                yaxis: { gridcolor: '#44475a' }
+            };
+        
+            Plotly.newPlot('interactive-plot', [trace], layout);
         }
     </script>
 </body>
