@@ -13,12 +13,8 @@
         }
         .container {
             width: 90%;
-            max-width: 1200px;
-            margin: 20px auto;
+            margin: 0 auto;
             padding: 20px;
-            background-color: white;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-            border-radius: 8px;
         }
         h1 {
             color: #007bff;
@@ -29,32 +25,34 @@
         .content {
             display: flex;
             align-items: start;
-            gap: 20px;
+            gap: 30px;
         }
         .parameters {
             width: 30%;
-            min-width: 280px;
+            min-width: 250px;
         }
         .plot-container {
             width: 70%;
             display: flex;
             justify-content: center;
+            border-radius: 8px;
+            overflow: hidden;
         }
         label {
             display: block;
-            margin-top: 15px;
-            font-weight: 500;
-            color: #495057;
+            margin-top: 10px;
             position: relative;
+            cursor: pointer;
+            user-select: none;
         }
         label span {
             position: absolute;
-            bottom: 100%;
+            bottom: calc(100% + 5px);
             left: 50%;
             transform: translateX(-50%);
             width: max-content;
             max-width: 300px;
-            background-color: #343a40;
+            background-color: #333;
             color: #fff;
             padding: 8px 12px;
             border-radius: 6px;
@@ -62,104 +60,80 @@
             opacity: 0;
             transition: visibility 0s, opacity 0.3s ease;
             z-index: 1;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
-            font-size: 14px;
         }
         label:hover span {
             visibility: visible;
             opacity: 1;
         }
-        input[type="number"], input[type="text"] {
-            width: calc(100% - 22px);
-            padding: 8px 10px;
-            margin-top: 5px;
+        input[type="number"], input[type="text"], input[type="checkbox"] {
+            margin-left: 10px;
+            padding: 6px 10px;
             border: 1px solid #ced4da;
             border-radius: 4px;
-            font-size: 16px;
+            font-size: 1rem;
         }
-        input[type="checkbox"] {
-            margin-top: 5px;
-            accent-color: #007bff;
+        input[type="number"], input[type="text"] {
+            width: 100px;
         }
         button {
-            margin-top: 30px;
-            padding: 12px 24px;
-            background-color: #28a745;
+            margin-top: 20px;
+            padding: 10px 20px;
+            background-color: #5cb85c;
             color: white;
             border: none;
+            border-radius: 6px;
             cursor: pointer;
-            border-radius: 4px;
-            font-size: 18px;
-            transition: background-color 0.3s ease;
         }
         button:hover {
             background-color: #218838;
         }
         #plot {
-            width: 100%;
-            height: 600px;
-            border: 1px solid #ced4da;
-            border-radius: 4px;
+            width: 800px;
+            height: 800px;
         }
         .message {
-            margin-top: 15px;
+            margin-top: 10px;
             padding: 10px;
-            border: 1px solid;
-            border-radius: 4px;
-            font-size: 14px;
-        }
-        .message-success {
-            background-color: #d4edda;
-            border-color: #c3e6cb;
-            color: #155724;
-        }
-        .message-warning {
-            background-color: #fff3cd;
-            border-color: #ffeeba;
-            color: #856404;
-        }
-        .message-error {
-            background-color: #f8d7da;
-            border-color: #f5c6cb;
-            color: #721c24;
+            background-color: #fdd;
+            border: 1px solid #faa;
         }
         .snippet-container {
             margin-top: 30px;
             position: relative;
         }
         textarea {
-            width: calc(100% - 22px);
-            height: 220px;
+            width: 100%;
+            height: 200px;
             margin-top: 10px;
-            padding: 10px;
-            border: 1px solid #ced4da;
-            border-radius: 4px;
-            font-family: 'Courier New', Courier, monospace;
-            font-size: 14px;
             resize: vertical;
+            font-family: monospace;
+            font-size: 12px;
+            padding: 10px;
+            padding-right: 40px;
+            border: 1px solid #ccc;
         }
         .copy-button {
             position: absolute;
-            top: 30px;
+            top: 20px;
             right: 10px;
-            padding: 8px 12px;
-            background-color: #007bff;
+            padding: 5px;
+            background-color: #4CAF50;
             color: white;
             border: none;
+            border-radius: 6px;
             cursor: pointer;
-            border-radius: 4px;
+            border-radius: 5px;
             z-index: 10;
-            transition: background-color 0.3s ease;
         }
         .copy-button:hover {
             background-color: #0056b3;
         }
         .copy-button i {
-            font-size: 18px;
+            font-size: 16px;
         }
 
         /* Media Queries para Responsividade */
-        @media (max-width: 768px) {
+        @media (max-width: 1024px) {
             .content {
                 flex-direction: column;
                 align-items: center;
@@ -169,29 +143,27 @@
                 min-width: 0;
             }
             .plot-container {
-                margin-top: 20px;
+                margin-top: 20px; /* Adiciona espaço acima do gráfico */
             }
             #plot {
-                height: 450px;
+                width: 100%; /* Ajusta a largura do gráfico */
+                height: 400px; /* Reduz a altura do gráfico */
             }
         }
 
-        @media (max-width: 480px) {
+        @media (max-width: 600px) {
             h1 {
-                font-size: 22px;
+                font-size: 24px; /* Reduz o tamanho do título */
             }
             label span {
-                max-width: 90%;
-                font-size: 12px;
+                max-width: 90%; /* Aumenta a largura do tooltip */
+                font-size: 12px; /* Reduz o tamanho da fonte do tooltip */
             }
             input[type="number"], input[type="text"] {
-                font-size: 14px;
+                width: 80px; /* Reduz a largura dos inputs */
             }
             #plot {
-                height: 350px;
-            }
-            textarea {
-                font-size: 12px;
+                height: 300px; /* Reduz ainda mais a altura do gráfico */
             }
         }
     </style>
@@ -275,7 +247,7 @@
             </div>
 
             <div class="plot-container">
-                <div id="plot"></div>
+                <div id="plot" style="width: 80%; height: 500px;"></div>
             </div>
         </div>
 
@@ -482,64 +454,53 @@
             const [station, collisionMessages] = createStationArray(tileArrangement, tile_array);
 
             displayPlot(station, collisionMessages, stationName);
+
+            // Forçar atualização do layout após a renderização inicial
+            Plotly.relayout('plot', {}); 
             updateCodeSnippet();
         }
 
         function displayPlot(stationData, collisionMessages, stationName) {
             const xValues = stationData.map(point => point[0]);
             const yValues = stationData.map(point => point[1]);
-
+        
+            // Encontrar os limites do gráfico
+            let minX = Math.min(...xValues);
+            let maxX = Math.max(...xValues);
+            let minY = Math.min(...yValues);
+            let maxY = Math.max(...yValues);
+        
+            // Adicionar margem para garantir que os tiles nas bordas sejam visíveis
+            const margin = Math.max(tile_size_x, tile_size_y) * 0.75;
+            minX -= margin;
+            maxX += margin;
+            minY -= margin;
+            maxY += margin;
+        
             const plotData = [{
                 x: xValues,
                 y: yValues,
                 mode: 'markers',
-                type: 'scatter',
-                marker: {
-                    size: 8,
-                    color: '#007bff'
-                }
+                type: 'scatter'
             }];
-
+        
             const layout = {
-                title: {
-                    text: stationName,
-                    font: {
-                        size: 20,
-                        color: '#343a40'
-                    }
-                },
+                title: stationName,
                 autosize: true,
                 xaxis: {
+                    range: [minX, maxX], // Definir os limites do eixo x
                     scaleanchor: "y",
-                    scaleratio: 1,
-                    showgrid: false,
-                    zeroline: false,
-                    showline: false,
-                    ticks: '',
-                    showticklabels: false
+                    scaleratio: 1
                 },
                 yaxis: {
+                    range: [minY, maxY], // Definir os limites do eixo y
                     scaleanchor: "x",
-                    scaleratio: 1,
-                    showgrid: false,
-                    zeroline: false,
-                    showline: false,
-                    ticks: '',
-                    showticklabels: false
-                },
-                margin: {
-                    l: 50,
-                    r: 50,
-                    b: 50,
-                    t: 50,
-                    pad: 10
-                },
-                plot_bgcolor: '#f8f9fa',
-                paper_bgcolor: '#fff'
+                    scaleratio: 1
+                }
             };
-
+        
             Plotly.newPlot('plot', plotData, layout);
-
+        
             // Exibe mensagens de colisão
             const messageContainer = document.getElementById('message-container');
             messageContainer.innerHTML = '';
@@ -555,7 +516,17 @@
         function displayMessage(message, type) {
             const messageContainer = document.getElementById('message-container');
             const div = document.createElement('div');
-            div.className = `message message-${type}`;
+            div.className = 'message';
+            if (type === 'error') {
+                div.style.backgroundColor = '#fdd';
+                div.style.borderColor = '#faa';
+            } else if (type === 'warning') {
+                div.style.backgroundColor = '#ffd';
+                div.style.borderColor = '#ffa';
+            } else {
+                div.style.backgroundColor = '#dfd';
+                div.style.borderColor = '#afa';
+            }
             div.textContent = message;
             messageContainer.appendChild(div);
         }
@@ -584,6 +555,8 @@
     exponential_angle_factor=${exponentialAngleFactor},
     rotation_per_spiral=${rotationPerSpiral},
     center_tile=${centerTile ? 'True' : 'False'},
+    rotation_per_spiral=${rotationPerSpiral},
+    center_tile=${centerTile},
     station_name='${stationName}'
 )`;
             document.getElementById('code-snippet').value = snippet;
