@@ -28,7 +28,7 @@
         }
         .content {
             display: flex;
-            align-items: start;
+            align-items: flex-start; /* Alterado para alinhar ao topo */
             gap: 30px;
         }
         .parameters {
@@ -41,7 +41,8 @@
         .plot-container {
             width: 70%;
             display: flex;
-            justify-content: center;
+            justify-content: center; /* Centralizar o conteúdo horizontalmente */
+            align-items: center; /* Centralizar o conteúdo verticalmente */
             border-radius: 8px;
             overflow: hidden;
         }
@@ -102,12 +103,12 @@
             background-color: #218838;
         }
         #plot {
-            width: 100%;
+            width: 100%; /* Use 100% para ocupar o espaço disponível */
             height: 600px;
             border: 1px solid #ced4da;
             border-radius: 8px;
         }
-        .message {
+         .message {
             margin-top: 15px;
             padding: 12px;
             border-radius: 6px;
@@ -554,9 +555,9 @@
                         color: '#495057'
                     }
                 },
-                plot_bgcolor: '#fff',
-                paper_bgcolor: '#fff',
-                margin: {
+                 plot_bgcolor: '#fff',
+                 paper_bgcolor: '#fff',
+                 margin: {
                     l: 20,
                     r: 20,
                     b: 30,
