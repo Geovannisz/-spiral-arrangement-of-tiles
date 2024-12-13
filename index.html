@@ -488,20 +488,20 @@
         function displayPlot(stationData, collisionMessages, stationName) {
             const xValues = stationData.map(point => point[0]);
             const yValues = stationData.map(point => point[1]);
-
-            // Encontrar os valores mínimos e máximos de x e y
+        
+            // Encontrar os limites do gráfico
             let minX = Math.min(...xValues);
             let maxX = Math.max(...xValues);
             let minY = Math.min(...yValues);
             let maxY = Math.max(...yValues);
-
-            // Adicionar margem
-            const margin = Math.max(tile_size_x, tile_size_y); // Margem proporcional ao tamanho do tile
+        
+            // Adicionar margem para garantir que os tiles nas bordas sejam visíveis
+            const margin = Math.max(tile_size_x, tile_size_y) * 0.5;
             minX -= margin;
             maxX += margin;
             minY -= margin;
             maxY += margin;
-
+        
             const plotData = [{
                 x: xValues,
                 y: yValues,
@@ -512,7 +512,7 @@
                     color: '#007bff'
                 }
             }];
-
+        
             const layout = {
                 title: {
                     text: stationName,
@@ -562,9 +562,9 @@
                 },
                 hovermode: 'closest'
             };
-
+        
             Plotly.newPlot('plot', plotData, layout);
-
+        
             // Exibe mensagens de colisão
             const messageContainer = document.getElementById('message-container');
             messageContainer.innerHTML = '';
