@@ -12,9 +12,13 @@
             color: #343a40;
         }
         .container {
-            width: 90%;
-            margin: 0 auto;
+            width: 95%;
+            max-width: 1200px;
+            margin: 20px auto;
             padding: 20px;
+            background-color: #fff;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
         }
         h1 {
             color: #007bff;
@@ -29,7 +33,10 @@
         }
         .parameters {
             width: 30%;
-            min-width: 250px;
+            min-width: 280px;
+            padding: 15px;
+            background-color: #e9ecef;
+            border-radius: 8px;
         }
         .plot-container {
             width: 70%;
@@ -39,8 +46,9 @@
             overflow: hidden;
         }
         label {
-            display: block;
-            margin-top: 10px;
+            display: flex;
+            align-items: center;
+            margin-top: 15px;
             position: relative;
             cursor: pointer;
             user-select: none;
@@ -51,8 +59,8 @@
             left: 50%;
             transform: translateX(-50%);
             width: max-content;
-            max-width: 300px;
-            background-color: #333;
+            max-width: 350px;
+            background-color: #555;
             color: #fff;
             padding: 8px 12px;
             border-radius: 6px;
@@ -60,6 +68,7 @@
             opacity: 0;
             transition: visibility 0s, opacity 0.3s ease;
             z-index: 1;
+            text-align: center;
         }
         label:hover span {
             visibility: visible;
@@ -73,29 +82,46 @@
             font-size: 1rem;
         }
         input[type="number"], input[type="text"] {
-            width: 100px;
+            width: 120px;
+        }
+        input[type="checkbox"] {
+            width: auto;
         }
         button {
-            margin-top: 20px;
-            padding: 10px 20px;
-            background-color: #5cb85c;
+            margin-top: 30px;
+            padding: 12px 25px;
+            background-color: #28a745;
             color: white;
             border: none;
             border-radius: 6px;
             cursor: pointer;
+            transition: background-color 0.3s ease;
+            font-weight: 500;
         }
         button:hover {
             background-color: #218838;
         }
         #plot {
-            width: 800px;
-            height: 800px;
+            width: 800px; /* Largura desejada */
+            height: 600px; /* Altura desejada */
+            margin: 0 auto;
+            border: 1px solid #ced4da;
+            border-radius: 8px;
         }
         .message {
-            margin-top: 10px;
-            padding: 10px;
-            background-color: #fdd;
-            border: 1px solid #faa;
+            margin-top: 15px;
+            padding: 12px;
+            border-radius: 6px;
+            font-size: 0.95rem;
+            color: #343a40;
+        }
+        .message-success {
+            background-color: #d4edda;
+            border: 1px solid #c3e6cb;
+        }
+        .message-warning {
+            background-color: #fff3cd;
+            border: 1px solid #ffeeba;
         }
         .snippet-container {
             margin-top: 30px;
@@ -103,33 +129,34 @@
         }
         textarea {
             width: 100%;
-            height: 200px;
-            margin-top: 10px;
+            height: 220px;
+            margin-top: 15px;
+            padding: 15px;
+            border: 1px solid #ced4da;
+            border-radius: 6px;
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 0.9rem;
             resize: vertical;
-            font-family: monospace;
-            font-size: 12px;
-            padding: 10px;
-            padding-right: 40px;
-            border: 1px solid #ccc;
+            padding-right: 45px;
         }
         .copy-button {
             position: absolute;
-            top: 20px;
-            right: 10px;
-            padding: 5px;
-            background-color: #4CAF50;
+            top: 35px;
+            right: 15px;
+            padding: 8px 12px;
+            background-color: #007bff;
             color: white;
             border: none;
             border-radius: 6px;
             cursor: pointer;
-            border-radius: 5px;
+            transition: background-color 0.3s ease;
             z-index: 10;
         }
         .copy-button:hover {
             background-color: #0056b3;
         }
         .copy-button i {
-            font-size: 16px;
+            font-size: 1.1rem;
         }
 
         /* Media Queries para Responsividade */
@@ -143,27 +170,29 @@
                 min-width: 0;
             }
             .plot-container {
-                margin-top: 20px; /* Adiciona espaço acima do gráfico */
+                margin-top: 30px;
             }
             #plot {
-                width: 100%; /* Ajusta a largura do gráfico */
-                height: 400px; /* Reduz a altura do gráfico */
+                height: 500px;
             }
         }
 
         @media (max-width: 600px) {
             h1 {
-                font-size: 24px; /* Reduz o tamanho do título */
+                font-size: 1.8rem;
             }
             label span {
-                max-width: 90%; /* Aumenta a largura do tooltip */
-                font-size: 12px; /* Reduz o tamanho da fonte do tooltip */
+                max-width: 95%;
+                font-size: 0.9rem;
             }
             input[type="number"], input[type="text"] {
-                width: 80px; /* Reduz a largura dos inputs */
+                width: 100px;
             }
             #plot {
-                height: 300px; /* Reduz ainda mais a altura do gráfico */
+                height: 400px;
+            }
+            textarea {
+                height: 180px;
             }
         }
     </style>
@@ -463,44 +492,93 @@
         function displayPlot(stationData, collisionMessages, stationName) {
             const xValues = stationData.map(point => point[0]);
             const yValues = stationData.map(point => point[1]);
-        
+
             // Encontrar os limites do gráfico
             let minX = Math.min(...xValues);
             let maxX = Math.max(...xValues);
             let minY = Math.min(...yValues);
             let maxY = Math.max(...yValues);
-        
+
             // Adicionar margem para garantir que os tiles nas bordas sejam visíveis
             const margin = Math.max(tile_size_x, tile_size_y) * 0.75;
             minX -= margin;
             maxX += margin;
             minY -= margin;
             maxY += margin;
-        
+
+            // Calcular o centro do gráfico
+            const centerX = (minX + maxX) / 2;
+            const centerY = (minY + maxY) / 2;
+
             const plotData = [{
                 x: xValues,
                 y: yValues,
                 mode: 'markers',
-                type: 'scatter'
+                type: 'scatter',
+                marker: {
+                    size: 10,
+                    color: '#007bff'
+                }
             }];
-        
+
             const layout = {
-                title: stationName,
+                title: {
+                    text: stationName,
+                    font: {
+                        size: 18,
+                        color: '#343a40'
+                    }
+                },
                 autosize: true,
                 xaxis: {
-                    range: [minX, maxX], // Definir os limites do eixo x
+                    // Definir o centro do eixo x
+                    range: [minX, maxX],
+                    fixedrange: true, // Impede que o usuário altere a escala do eixo X com zoom ou pan
                     scaleanchor: "y",
-                    scaleratio: 1
+                    scaleratio: 1,
+                    showgrid: false,
+                    zeroline: false,
+                    showline: true,
+                    mirror: 'ticks',
+                    linecolor: '#6c757d',
+                    linewidth: 1,
+                    tickfont: {
+                        size: 12,
+                        color: '#495057'
+                    }
+
                 },
                 yaxis: {
-                    range: [minY, maxY], // Definir os limites do eixo y
+                    // Definir o centro do eixo y
+                    range: [minY, maxY],
+                    fixedrange: true, // Impede que o usuário altere a escala do eixo Y com zoom ou pan
                     scaleanchor: "x",
-                    scaleratio: 1
-                }
+                    scaleratio: 1,
+                    showgrid: false,
+                    zeroline: false,
+                    showline: true,
+                    mirror: 'ticks',
+                    linecolor: '#6c757d',
+                    linewidth: 1,
+                    tickfont: {
+                        size: 12,
+                        color: '#495057'
+                    }
+                },
+                plot_bgcolor: '#fff',
+                paper_bgcolor: '#fff',
+                margin: {
+                    l: 0,
+                    r: 0,
+                    b: 0,
+                    t: 60,
+                    pad: 0
+                },
+                hovermode: 'closest'
             };
-        
+
             Plotly.newPlot('plot', plotData, layout);
-        
+
             // Exibe mensagens de colisão
             const messageContainer = document.getElementById('message-container');
             messageContainer.innerHTML = '';
@@ -516,17 +594,7 @@
         function displayMessage(message, type) {
             const messageContainer = document.getElementById('message-container');
             const div = document.createElement('div');
-            div.className = 'message';
-            if (type === 'error') {
-                div.style.backgroundColor = '#fdd';
-                div.style.borderColor = '#faa';
-            } else if (type === 'warning') {
-                div.style.backgroundColor = '#ffd';
-                div.style.borderColor = '#ffa';
-            } else {
-                div.style.backgroundColor = '#dfd';
-                div.style.borderColor = '#afa';
-            }
+            div.className = `message ${type === 'warning' ? 'message-warning' : 'message-success'}`;
             div.textContent = message;
             messageContainer.appendChild(div);
         }
@@ -555,8 +623,6 @@
     exponential_angle_factor=${exponentialAngleFactor},
     rotation_per_spiral=${rotationPerSpiral},
     center_tile=${centerTile ? 'True' : 'False'},
-    rotation_per_spiral=${rotationPerSpiral},
-    center_tile=${centerTile},
     station_name='${stationName}'
 )`;
             document.getElementById('code-snippet').value = snippet;
