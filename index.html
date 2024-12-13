@@ -14,17 +14,17 @@
         .container {
             width: 95%;
             max-width: 1200px;
-            margin: 20px auto;
+            margin: 0 auto;
             padding: 20px;
-            background-color: #fff;
-            border-radius: 10px;
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            background-color: white;
+            border-radius: 8px;
         }
         h1 {
-            color: #007bff;
+            color: #28a745;
             margin-bottom: 30px;
             text-align: center;
-            font-weight: 600;
+            font-weight: bold;
         }
         .content {
             display: flex;
@@ -34,33 +34,27 @@
         .parameters {
             width: 30%;
             min-width: 280px;
-            padding: 15px;
-            background-color: #e9ecef;
-            border-radius: 8px;
         }
         .plot-container {
             width: 70%;
             display: flex;
             justify-content: center;
-            border-radius: 8px;
-            overflow: hidden;
         }
         label {
-            display: flex;
-            align-items: center;
+            display: block;
             margin-top: 15px;
+            margin-bottom: 5px;
             position: relative;
-            cursor: pointer;
-            user-select: none;
+            font-weight: 600;
         }
         label span {
             position: absolute;
-            bottom: calc(100% + 5px);
+            bottom: 100%;
             left: 50%;
             transform: translateX(-50%);
             width: max-content;
             max-width: 350px;
-            background-color: #555;
+            background-color: #343a40;
             color: #fff;
             padding: 8px 12px;
             border-radius: 6px;
@@ -68,95 +62,89 @@
             opacity: 0;
             transition: visibility 0s, opacity 0.3s ease;
             z-index: 1;
-            text-align: center;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+            font-size: 0.9em;
         }
         label:hover span {
             visibility: visible;
             opacity: 1;
         }
         input[type="number"], input[type="text"], input[type="checkbox"] {
-            margin-left: 10px;
-            padding: 6px 10px;
+            padding: 8px;
             border: 1px solid #ced4da;
             border-radius: 4px;
-            font-size: 1rem;
+            font-size: 0.9em;
+            margin-bottom: 10px;
+            width: calc(100% - 18px);
         }
         input[type="number"], input[type="text"] {
             width: 120px;
         }
-        input[type="checkbox"] {
-            width: auto;
-        }
         button {
-            margin-top: 30px;
-            padding: 12px 25px;
+            margin-top: 25px;
+            padding: 12px 24px;
             background-color: #28a745;
             color: white;
             border: none;
-            border-radius: 6px;
             cursor: pointer;
-            transition: background-color 0.3s ease;
+            border-radius: 6px;
             font-weight: 500;
+            transition: background-color 0.3s ease;
         }
         button:hover {
             background-color: #218838;
         }
         #plot {
-            width: 80%; /* Ajuste a largura conforme necessário */
-            height: 500px; /* Ajuste a altura conforme necessário */
-            margin: 0 auto; /* Mantém o gráfico centralizado horizontalmente */
-            border: 1px solid #ced4da;
-            border-radius: 8px;
+            width: 100%;
+            max-width: 800px;
+            height: 600px;
         }
         .message {
             margin-top: 15px;
             padding: 12px;
-            border-radius: 6px;
-            font-size: 0.95rem;
-            color: #343a40;
+            background-color: #f8d7da;
+            border: 1px solid #f5c6cb;
+            border-radius: 4px;
+            color: #721c24;
         }
-        .message-success {
+        .message.success {
             background-color: #d4edda;
-            border: 1px solid #c3e6cb;
-        }
-        .message-warning {
-            background-color: #fff3cd;
-            border: 1px solid #ffeeba;
+            border-color: #c3e6cb;
+            color: #155724;
         }
         .snippet-container {
             margin-top: 30px;
             position: relative;
         }
         textarea {
-            width: 100%;
+            width: calc(100% - 20px);
             height: 220px;
             margin-top: 15px;
-            padding: 15px;
+            padding: 10px;
             border: 1px solid #ced4da;
-            border-radius: 6px;
+            border-radius: 4px;
             font-family: 'Courier New', Courier, monospace;
-            font-size: 0.9rem;
+            font-size: 0.85em;
             resize: vertical;
-            padding-right: 45px;
         }
         .copy-button {
             position: absolute;
-            top: 35px;
-            right: 15px;
-            padding: 8px 12px;
+            top: 15px;
+            right: 10px;
+            padding: 6px 12px;
             background-color: #007bff;
             color: white;
             border: none;
-            border-radius: 6px;
             cursor: pointer;
-            transition: background-color 0.3s ease;
+            border-radius: 4px;
             z-index: 10;
+            transition: background-color 0.3s ease;
         }
         .copy-button:hover {
             background-color: #0056b3;
         }
         .copy-button i {
-            font-size: 1.1rem;
+            font-size: 1.1em;
         }
 
         /* Media Queries para Responsividade */
@@ -179,20 +167,20 @@
 
         @media (max-width: 600px) {
             h1 {
-                font-size: 1.8rem;
+                font-size: 22px;
             }
             label span {
                 max-width: 95%;
-                font-size: 0.9rem;
+                font-size: 0.8em;
             }
             input[type="number"], input[type="text"] {
-                width: 100px;
+                width: 95%;
             }
             #plot {
                 height: 400px;
             }
             textarea {
-                height: 180px;
+                font-size: 0.8em;
             }
         }
     </style>
@@ -276,7 +264,7 @@
             </div>
 
             <div class="plot-container">
-                <div id="plot" style="width: 80%; height: 500px;"></div>
+                <div id="plot"></div>
             </div>
         </div>
 
@@ -483,93 +471,35 @@
             const [station, collisionMessages] = createStationArray(tileArrangement, tile_array);
 
             displayPlot(station, collisionMessages, stationName);
-
-            // Forçar atualização do layout após a renderização inicial
-            Plotly.relayout('plot', {}); 
             updateCodeSnippet();
         }
 
         function displayPlot(stationData, collisionMessages, stationName) {
             const xValues = stationData.map(point => point[0]);
             const yValues = stationData.map(point => point[1]);
-        
-            // Encontrar os limites do gráfico
-            let minX = Math.min(...xValues);
-            let maxX = Math.max(...xValues);
-            let minY = Math.min(...yValues);
-            let maxY = Math.max(...yValues);
-        
-            // Adicionar margem para garantir que os tiles nas bordas sejam visíveis
-            const margin = Math.max(tile_size_x, tile_size_y) * 0.75;
-            minX -= margin;
-            maxX += margin;
-            minY -= margin;
-            maxY += margin;
-        
+
             const plotData = [{
                 x: xValues,
                 y: yValues,
                 mode: 'markers',
-                type: 'scatter',
-                marker: {
-                    size: 10,
-                    color: '#007bff'
-                }
+                type: 'scatter'
             }];
-        
+
             const layout = {
-                title: {
-                    text: stationName,
-                    font: {
-                        size: 18,
-                        color: '#343a40'
-                    }
-                },
+                title: stationName,
                 autosize: true,
                 xaxis: {
-                    range: [minX, maxX], // Definir os limites do eixo x
                     scaleanchor: "y",
-                    scaleratio: 1,
-                    showgrid: false,
-                    zeroline: false,
-                    showline: true,
-                    mirror: 'ticks',
-                    linecolor: '#6c757d',
-                    linewidth: 1,
-                    tickfont: {
-                        size: 12,
-                        color: '#495057'
-                    }
+                    scaleratio: 1
                 },
                 yaxis: {
-                    range: [minY, maxY], // Definir os limites do eixo y
                     scaleanchor: "x",
-                    scaleratio: 1,
-                    showgrid: false,
-                    zeroline: false,
-                    showline: true,
-                    mirror: 'ticks',
-                    linecolor: '#6c757d',
-                    linewidth: 1,
-                    tickfont: {
-                        size: 12,
-                        color: '#495057'
-                    }
-                },
-                plot_bgcolor: '#fff',
-                paper_bgcolor: '#fff',
-                margin: {
-                    l: 0,
-                    r: 0,
-                    b: 0,
-                    t: 60,
-                    pad: 0
-                },
-                hovermode: 'closest'
+                    scaleratio: 1
+                }
             };
-        
+
             Plotly.newPlot('plot', plotData, layout);
-        
+
             // Exibe mensagens de colisão
             const messageContainer = document.getElementById('message-container');
             messageContainer.innerHTML = '';
@@ -585,7 +515,7 @@
         function displayMessage(message, type) {
             const messageContainer = document.getElementById('message-container');
             const div = document.createElement('div');
-            div.className = `message ${type === 'warning' ? 'message-warning' : 'message-success'}`;
+            div.className = `message ${type === 'success' ? 'success' : ''}`;
             div.textContent = message;
             messageContainer.appendChild(div);
         }
