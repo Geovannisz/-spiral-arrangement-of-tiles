@@ -489,6 +489,19 @@
             const xValues = stationData.map(point => point[0]);
             const yValues = stationData.map(point => point[1]);
 
+            // Encontrar os valores mínimos e máximos de x e y
+            let minX = Math.min(...xValues);
+            let maxX = Math.max(...xValues);
+            let minY = Math.min(...yValues);
+            let maxY = Math.max(...yValues);
+
+            // Adicionar margem
+            const margin = Math.max(tile_size_x, tile_size_y); // Margem proporcional ao tamanho do tile
+            minX -= margin;
+            maxX += margin;
+            minY -= margin;
+            maxY += margin;
+
             const plotData = [{
                 x: xValues,
                 y: yValues,
@@ -510,6 +523,7 @@
                 },
                 autosize: true,
                 xaxis: {
+                    range: [minX, maxX], // Definir os limites do eixo x
                     scaleanchor: "y",
                     scaleratio: 1,
                     showgrid: false,
@@ -524,6 +538,7 @@
                     }
                 },
                 yaxis: {
+                    range: [minY, maxY], // Definir os limites do eixo y
                     scaleanchor: "x",
                     scaleratio: 1,
                     showgrid: false,
