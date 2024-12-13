@@ -28,7 +28,7 @@
         }
         .content {
             display: flex;
-            align-items: flex-start; /* Alterado para alinhar ao topo */
+            align-items: start;
             gap: 30px;
         }
         .parameters {
@@ -42,7 +42,6 @@
             width: 70%;
             display: flex;
             justify-content: center;
-            align-items: center; /* Centralizar verticalmente */
             border-radius: 8px;
             overflow: hidden;
         }
@@ -103,12 +102,11 @@
             background-color: #218838;
         }
         #plot {
-            width: 100%;
-            height: 600px;
+            width: 80%; /* Ajuste a largura conforme necessário */
+            height: 500px; /* Ajuste a altura conforme necessário */
+            margin: 0 auto; /* Mantém o gráfico centralizado horizontalmente */
             border: 1px solid #ced4da;
             border-radius: 8px;
-            display: flex;
-            align-items: center; /* Centralizar o gráfico verticalmente */
         }
         .message {
             margin-top: 15px;
@@ -278,7 +276,7 @@
             </div>
 
             <div class="plot-container">
-                <div id="plot"></div>
+                <div id="plot" style="width: 80%; height: 500px;"></div>
             </div>
         </div>
 
@@ -485,6 +483,9 @@
             const [station, collisionMessages] = createStationArray(tileArrangement, tile_array);
 
             displayPlot(station, collisionMessages, stationName);
+
+            // Forçar atualização do layout após a renderização inicial
+            Plotly.relayout('plot', {}); 
             updateCodeSnippet();
         }
 
@@ -498,14 +499,12 @@
             let minY = Math.min(...yValues);
             let maxY = Math.max(...yValues);
         
-            // Adicionar margem adaptativa para garantir que os tiles nas bordas sejam visíveis
-            const marginFactor = 0.15; // Fator de escala para a margem
-            const marginX = Math.max(Math.abs(maxX - minX) * marginFactor, tile_size_x);
-            const marginY = Math.max(Math.abs(maxY - minY) * marginFactor, tile_size_y);
-            minX -= marginX;
-            maxX += marginX;
-            minY -= marginY;
-            maxY += marginY;
+            // Adicionar margem para garantir que os tiles nas bordas sejam visíveis
+            const margin = Math.max(tile_size_x, tile_size_y) * 0.75;
+            minX -= margin;
+            maxX += margin;
+            minY -= margin;
+            maxY += margin;
         
             const plotData = [{
                 x: xValues,
@@ -560,22 +559,16 @@
                 plot_bgcolor: '#fff',
                 paper_bgcolor: '#fff',
                 margin: {
-                    l: 20,
-                    r: 20,
-                    b: 30,
-                    t: 70,
-                    pad: 0 // preenchimento entre os eixos e a área do gráfico
+                    l: 0,
+                    r: 0,
+                    b: 0,
+                    t: 60,
+                    pad: 0
                 },
                 hovermode: 'closest'
             };
         
-             // Verificar se o elemento 'plot' existe antes de chamar Plotly.newPlot
-            const plotElement = document.getElementById('plot');
-            if (plotElement) {
-               Plotly.newPlot('plot', plotData, layout);
-            } else {
-              console.error("Elemento com ID 'plot' não encontrado.");
-            }
+            Plotly.newPlot('plot', plotData, layout);
         
             // Exibe mensagens de colisão
             const messageContainer = document.getElementById('message-container');
