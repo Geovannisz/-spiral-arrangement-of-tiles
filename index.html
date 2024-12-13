@@ -17,34 +17,34 @@
         }
         h1 {
             color: #333;
-            margin-bottom: 20px; /* Adicionado para manter espaço entre título e conteúdo */
+            margin-bottom: 20px;
+            text-align: center; /* Centraliza o título em todas as telas */
         }
         .content {
             display: flex;
-            align-items: start; /* Alinha os itens ao topo */
+            align-items: start;
             gap: 20px;
         }
         .parameters {
-            width: 30%; /* Aumentado para acomodar o layout lado a lado */
-            min-width: 250px; /* Largura mínima para evitar compressão excessiva */
+            width: 30%;
+            min-width: 250px;
         }
         .plot-container {
-            width: 70%; /* Ajustado para o novo layout */
+            width: 70%;
             display: flex;
-            justify-content: center; /* Centraliza o gráfico */
+            justify-content: center;
         }
         label {
             display: block;
             margin-top: 10px;
-            position: relative; /* Para o tooltip */
+            position: relative;
         }
-        /* Estilos para o tooltip */
         label span {
             position: absolute;
-            bottom: 100%; /* Posiciona acima do label */
+            bottom: 100%;
             left: 50%;
             transform: translateX(-50%);
-            width: max-content; /* Ajusta a largura ao conteúdo */
+            width: max-content;
             max-width: 300px;
             background-color: #333;
             color: #fff;
@@ -74,8 +74,8 @@
             background-color: #4cae4c;
         }
         #plot {
-            width: 800px; /* Aumentado para tornar o gráfico mais quadrado */
-            height: 800px; /* Aumentado para tornar o gráfico mais quadrado */
+            width: 800px;
+            height: 800px;
         }
         .message {
             margin-top: 10px;
@@ -95,7 +95,7 @@
             font-family: monospace;
             font-size: 12px;
             padding: 10px;
-            padding-right: 40px; /* Espaço para o botão de cópia */
+            padding-right: 40px;
             border: 1px solid #ccc;
         }
         .copy-button {
@@ -108,13 +108,33 @@
             border: none;
             cursor: pointer;
             border-radius: 5px;
-            z-index: 10; /* Garante que o botão fique sobre a textarea */
+            z-index: 10;
         }
         .copy-button:hover {
             background-color: #367c39;
         }
         .copy-button i {
             font-size: 16px;
+        }
+
+        /* Media Queries para Responsividade */
+        @media (max-width: 768px) {
+            .content {
+                flex-direction: column; /* Muda o layout para vertical */
+                align-items: center; /* Centraliza os itens */
+            }
+            .parameters {
+                width: 100%; /* Ocupa a largura total */
+                min-width: 0; /* Remove a largura mínima */
+            }
+            .plot-container {
+                width: 100%; /* Ocupa a largura total */
+            }
+            #plot {
+                width: 100%; /* Ajusta a largura do gráfico */
+                height: auto; /* Altura automática para manter a proporção */
+                max-height: 500px; /* Altura máxima para evitar que fique muito grande */
+            }
         }
     </style>
     <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
