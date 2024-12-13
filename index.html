@@ -12,46 +12,55 @@
         }
         .container {
             width: 90%;
-            margin: 20px auto;
+            margin: 0 auto;
             padding: 20px;
-            border: 1px solid #ccc;
-            border-radius: 10px;
-            background-color: #fff;
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
         }
         h1 {
             color: #333;
-            text-align: center;
-            margin-bottom: 20px;
+            margin-bottom: 20px; /* Adicionado para manter espaço entre título e conteúdo */
         }
         .content {
             display: flex;
+            align-items: start; /* Alinha os itens ao topo */
             gap: 20px;
-            justify-content: space-around;
-            align-items: flex-start;
         }
         .parameters {
-            width: 40%;
+            width: 30%; /* Aumentado para acomodar o layout lado a lado */
+            min-width: 250px; /* Largura mínima para evitar compressão excessiva */
         }
         .plot-container {
-            width: 60%;
+            width: 70%; /* Ajustado para o novo layout */
             display: flex;
-            justify-content: center;
-            align-items: center;
+            justify-content: center; /* Centraliza o gráfico */
         }
         label {
             display: block;
             margin-top: 10px;
-            font-weight: bold;
-            color: #555;
             position: relative; /* Para o tooltip */
+        }
+        /* Estilos para o tooltip */
+        label span {
+            position: absolute;
+            bottom: 100%; /* Posiciona acima do label */
+            left: 50%;
+            transform: translateX(-50%);
+            width: max-content; /* Ajusta a largura ao conteúdo */
+            max-width: 300px;
+            background-color: #333;
+            color: #fff;
+            padding: 5px 10px;
+            border-radius: 5px;
+            visibility: hidden;
+            opacity: 0;
+            transition: visibility 0s, opacity 0.3s ease;
+            z-index: 1;
+        }
+        label:hover span {
+            visibility: visible;
+            opacity: 1;
         }
         input[type="number"], input[type="text"] {
             width: 100px;
-            padding: 5px;
-            border: 1px solid #ccc;
-            border-radius: 5px;
-            margin-top: 5px;
         }
         button {
             margin-top: 20px;
@@ -60,22 +69,19 @@
             color: white;
             border: none;
             cursor: pointer;
-            border-radius: 5px;
-            transition: background-color 0.3s ease;
         }
         button:hover {
             background-color: #4cae4c;
         }
         #plot {
-            width: 600px;
-            height: 600px;
+            width: 800px; /* Aumentado para tornar o gráfico mais quadrado */
+            height: 800px; /* Aumentado para tornar o gráfico mais quadrado */
         }
         .message {
             margin-top: 10px;
             padding: 10px;
             background-color: #fdd;
             border: 1px solid #faa;
-            border-radius: 5px;
         }
         .snippet-container {
             margin-top: 20px;
@@ -91,7 +97,6 @@
             padding: 10px;
             padding-right: 40px; /* Espaço para o botão de cópia */
             border: 1px solid #ccc;
-            border-radius: 5px;
         }
         .copy-button {
             position: absolute;
@@ -111,33 +116,6 @@
         .copy-button i {
             font-size: 16px;
         }
-        .tooltip {
-            position: absolute;
-            background-color: #333;
-            color: white;
-            padding: 5px 10px;
-            border-radius: 5px;
-            z-index: 1;
-            bottom: 125%;
-            left: 50%;
-            margin-left: -75px;
-            opacity: 0;
-            transition: opacity 0.3s;
-            white-space: nowrap;
-        }
-        label:hover .tooltip {
-            opacity: 1;
-        }
-        .tooltip::after {
-            content: "";
-            position: absolute;
-            top: 100%;
-            left: 50%;
-            margin-left: -5px;
-            border-width: 5px;
-            border-style: solid;
-            border-color: #333 transparent transparent transparent;
-        }
     </style>
     <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
 </head>
@@ -149,67 +127,67 @@
             <div class="parameters">
                 <label for="num_petals">
                     Número de Espirais:
-                    <span class="tooltip">Controla o número de espirais no arranjo.</span>
+                    <span>Controla o número de espirais no arranjo.</span>
                 </label>
                 <input type="number" id="num_petals" value="6">
 
                 <label for="tiles_per_petal">
                     Tiles por Espiral:
-                    <span class="tooltip">Define quantos tiles serão dispostos em cada espiral.</span>
+                    <span>Define quantos tiles serão dispostos em cada espiral.</span>
                 </label>
                 <input type="number" id="tiles_per_petal" value="5">
 
                 <label for="base_radius">
                     Raio Base (x tile_size):
-                    <span class="tooltip">O raio inicial do arranjo, medido a partir do centro até o início das espirais. Multiplicado pelo tamanho do tile.</span>
+                    <span>O raio inicial do arranjo, medido a partir do centro até o início das espirais. Multiplicado pelo tamanho do tile.</span>
                 </label>
                 <input type="number" id="base_radius" value="2">
 
                 <label for="radius_growth_factor">
                     Fator de Crescimento do Raio (x tile_size):
-                    <span class="tooltip">Fator pelo qual o raio aumenta a cada novo tile dentro de uma espiral. Multiplicado pelo tamanho do tile.</span>
+                    <span>Fator pelo qual o raio aumenta a cada novo tile dentro de uma espiral. Multiplicado pelo tamanho do tile.</span>
                 </label>
                 <input type="number" id="radius_growth_factor" value="1.5">
 
                 <label for="angle_offset_factor">
                     Fator de Offset do Ângulo:
-                    <span class="tooltip">Determina o ângulo inicial para a disposição dos tiles em cada espiral.</span>
+                    <span>Determina o ângulo inicial para a disposição dos tiles em cada espiral.</span>
                 </label>
                 <input type="number" id="angle_offset_factor" value="0.08333">
 
                 <label for="angle_variation_factor">
                     Fator de Variação do Ângulo:
-                    <span class="tooltip">Adiciona uma variação angular adicional para cada tile, permitindo curvas mais complexas nas espirais.</span>
+                    <span>Adiciona uma variação angular adicional para cada tile, permitindo curvas mais complexas nas espirais.</span>
                 </label>
                 <input type="number" id="angle_variation_factor" value="0">
 
                 <label for="exponential_radius_factor">
                     Fator Exponencial do Raio:
-                    <span class="tooltip">Aplica um crescimento exponencial ao raio, fazendo com que a distância entre os tiles aumente de forma não linear.</span>
+                    <span>Aplica um crescimento exponencial ao raio, fazendo com que a distância entre os tiles aumente de forma não linear.</span>
                 </label>
                 <input type="number" id="exponential_radius_factor" value="0">
 
                 <label for="exponential_angle_factor">
                     Fator Exponencial do Ângulo:
-                    <span class="tooltip">Introduz uma variação exponencial no ângulo, alterando a curvatura das espirais de forma não linear.</span>
+                    <span>Introduz uma variação exponencial no ângulo, alterando a curvatura das espirais de forma não linear.</span>
                 </label>
                 <input type="number" id="exponential_angle_factor" value="0">
 
                 <label for="rotation_per_petal">
                     Rotação por Espiral:
-                    <span class="tooltip">Aplica uma rotação adicional a cada espiral subsequente, criando um efeito de torção no arranjo.</span>
+                    <span>Aplica uma rotação adicional a cada espiral subsequente, criando um efeito de torção no arranjo.</span>
                 </label>
                 <input type="number" id="rotation_per_petal" value="0">
 
                 <label for="center_tile">
                     Tile Central:
-                    <span class="tooltip">Adiciona um tile no centro do arranjo, servindo como ponto de referência.</span>
+                    <span>Adiciona um tile no centro do arranjo, servindo como ponto de referência.</span>
                 </label>
                 <input type="checkbox" id="center_tile" checked>
 
                 <label for="station_name">
                     Nome da Estação:
-                    <span class="tooltip">Um nome descritivo para o arranjo gerado.</span>
+                    <span>Um nome descritivo para o arranjo gerado.</span>
                 </label>
                 <input type="text" id="station_name" value="Station">
 
@@ -264,7 +242,7 @@
                 point[0] * R[1][0] + point[1] * R[1][1]
             ]);
         }
-
+        
         function isCollision(tile1_center, tile1_angle, tile2_center, tile2_angle, tile_array) {
             const tile_size_x = Math.max(...tile_array.map(p => p[0])) - Math.min(...tile_array.map(p => p[0]));
             const tile_size_y = Math.max(...tile_array.map(p => p[1])) - Math.min(...tile_array.map(p => p[1]));
@@ -307,7 +285,17 @@
                 return false;
             }
         
-            return !(separatingAxis(hitbox1, hitbox2) || separatingAxis(hitbox2, hitbox1));
+            // Verifica se há colisão
+            if (!(separatingAxis(hitbox1, hitbox2) || separatingAxis(hitbox2, hitbox1))) {
+                // Se houver colisão, calcula o centro do tile
+                const tileCenter = [(hitbox2[0][0] + hitbox2[2][0]) / 2, (hitbox2[0][1] + hitbox2[2][1]) / 2];
+                
+                // Retorna true para indicar colisão, e as coordenadas do centro do tile
+                return { collision: true, tileCenter: tileCenter };
+            }
+        
+            // Se não houver colisão, retorna false e null para as coordenadas do centro
+            return { collision: false, tileCenter: null };
         }
 
         function createStationArray(tiles_config, tile_array) {
@@ -322,13 +310,14 @@
                 const tile_center = tiles_config[i][0];
                 const tile_angle = tiles_config[i][1];
                 let valid_position = true;
+                let collisionInfo = null;
         
                 for (let j = 0; j < i; j++) {
                     const existing_tile_center = tiles_config[j][0];
                     const existing_tile_angle = tiles_config[j][1];
-                    if (isCollision(tile_center, tile_angle, existing_tile_center, existing_tile_angle, tile_array)) {
+                    collisionInfo = isCollision(tile_center, tile_angle, existing_tile_center, existing_tile_angle, tile_array);
+                    if (collisionInfo.collision) {
                         valid_position = false;
-                        collision_messages.push(`Colisão detectada entre o tile ${i + 1} e outros tiles. Posição do tile ${i + 1} ignorada. Centro do tile: [${tile_center[0].toFixed(2)}, ${tile_center[1].toFixed(2)}]`);
                         break;
                     }
                 }
@@ -337,6 +326,8 @@
                     const rotated_tile = rotatePoints(tile_array_centered, tile_angle);
                     const translated_tile = rotated_tile.map(point => [point[0] + tile_center[0], point[1] + tile_center[1]]);
                     translated_tile.forEach(point => array_tot.push([...point, 0]));
+                } else {
+                    collision_messages.push(`Colisão detectada no tile ${i + 1}. Coordenadas do centro: (${collisionInfo.tileCenter[0].toFixed(2)}, ${collisionInfo.tileCenter[1].toFixed(2)}). Posição ignorada.`);
                 }
             }
         
