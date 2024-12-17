@@ -5,7 +5,6 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.1/css/all.min.css">
     <link rel="stylesheet" href="styles.css">
     <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.0/papaparse.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/numeric/1.2.6/numeric.min.js"></script>
 </head>
 <body>
@@ -14,6 +13,7 @@
 
         <div class="content">
             <div class="parameters">
+                <!-- Parâmetros -->
                 <label for="num_spirals">
                     Número de Espirais:
                     <span>Controla o número de espirais no arranjo.</span>
@@ -80,31 +80,35 @@
                 </label>
                 <input type="text" id="station_name" value="Station">
 
+                <!-- Campo de seleção para o ângulo Phi -->
                 <label for="phi_angle">
                     Ângulo Phi (em graus):
-                    <span>Define o ângulo Phi para o cálculo do campo elétrico.</span>
+                    <span>Define o ângulo Phi para o cálculo do SLL.</span>
                 </label>
                 <input type="number" id="phi_angle" value="90" min="-180" max="180">
 
+                <!-- Botão para gerar a station -->
                 <button onclick="generatePlot()">Gerar Station</button>
-                <button onclick="generateFieldPlot()">Gerar Gráfico do Campo Elétrico</button>
 
+                <!-- Botão para calcular o SLL -->
+                <button id="calculate-sll-button" onclick="calculateAndDisplaySLL()">Calcular SLL</button>
+
+                <!-- Div para exibir o valor do SLL -->
+                <div id="sll-container">
+                    <span id="sll-value"></span>
+                </div>
+
+                <!-- Mensagens -->
                 <div id="message-container"></div>
-                <div id="progress-container" style="display: none;">
-                    <progress id="progress-bar" value="0" max="100"></progress>
-                    <span id="progress-text">0%</span>
-                </div>
-                <div id="sll-container" style="display: none;">
-                    <span>SLL: </span><span id="sll-value"></span>
-                </div>
             </div>
 
+            <!-- Plot -->
             <div class="plot-container">
                 <div id="plot"></div>
-                <div id="field-plot-container"></div>
             </div>
         </div>
 
+        <!-- Código -->
         <div class="snippet-container">
             <textarea id="code-snippet" readonly></textarea>
             <button class="copy-button" onclick="copySnippet()"><i class="fas fa-paste"></i></button>
