@@ -371,6 +371,7 @@ function computeAF(theta, phi, array, k = 2 * Math.PI / 300, theta_0 = 0, phi_0 
         const phase = k * (diffs[i][0] * array[j][0] + diffs[i][1] * array[j][1] + diffs[i][2] * array[j][2]) + initialPhaseRad[j];
         sum += Math.cos(phase) + Math.sin(phase) * 1j;
       }
+      
       AF.push(sum);
     }
   }
