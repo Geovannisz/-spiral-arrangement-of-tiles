@@ -3,188 +3,10 @@
 <head>
     <title>Gerador de Arranjo de Tiles</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.1/css/all.min.css">
-    <style>
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            margin: 0;
-            padding: 0;
-            background-color: #f8f9fa;
-            color: #343a40;
-        }
-        .container {
-            width: 95%;
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 20px;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-            background-color: white;
-            border-radius: 8px;
-        }
-        h1 {
-            color: #28a745;
-            margin-bottom: 30px;
-            text-align: center;
-            font-weight: bold;
-        }
-        .content {
-            display: flex;
-            align-items: start;
-            gap: 30px;
-        }
-        .parameters {
-            width: 30%;
-            min-width: 280px;
-        }
-        .plot-container {
-            width: 70%;
-            display: flex;
-            justify-content: center;
-        }
-        label {
-            display: block;
-            margin-top: 15px;
-            margin-bottom: 5px;
-            position: relative;
-            font-weight: 600;
-        }
-        label span {
-            position: absolute;
-            bottom: 100%;
-            left: 50%;
-            transform: translateX(-50%);
-            width: max-content;
-            max-width: 350px;
-            background-color: #343a40;
-            color: #fff;
-            padding: 8px 12px;
-            border-radius: 6px;
-            visibility: hidden;
-            opacity: 0;
-            transition: visibility 0s, opacity 0.3s ease;
-            z-index: 1;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
-            font-size: 0.9em;
-        }
-        label:hover span {
-            visibility: visible;
-            opacity: 1;
-        }
-        input[type="number"], input[type="text"], input[type="checkbox"] {
-            padding: 8px;
-            border: 1px solid #ced4da;
-            border-radius: 4px;
-            font-size: 0.9em;
-            margin-bottom: 10px;
-            width: calc(100% - 18px);
-        }
-        input[type="number"], input[type="text"] {
-            width: 120px;
-        }
-        button {
-            margin-top: 25px;
-            padding: 12px 24px;
-            background-color: #28a745;
-            color: white;
-            border: none;
-            cursor: pointer;
-            border-radius: 6px;
-            font-weight: 500;
-            transition: background-color 0.3s ease;
-        }
-        button:hover {
-            background-color: #218838;
-        }
-        #plot {
-            width: 100%;
-            max-width: 800px;
-            height: 600px;
-        }
-        .message {
-            margin-top: 15px;
-            padding: 12px;
-            background-color: #f8d7da;
-            border: 1px solid #f5c6cb;
-            border-radius: 4px;
-            color: #721c24;
-        }
-        .message.success {
-            background-color: #d4edda;
-            border-color: #c3e6cb;
-            color: #155724;
-        }
-        .snippet-container {
-            margin-top: 30px;
-            position: relative;
-        }
-        textarea {
-            width: calc(100% - 20px);
-            height: 220px;
-            margin-top: 15px;
-            padding: 10px;
-            border: 1px solid #ced4da;
-            border-radius: 4px;
-            font-family: 'Courier New', Courier, monospace;
-            font-size: 0.85em;
-            resize: vertical;
-        }
-        .copy-button {
-            position: absolute;
-            top: 15px;
-            right: 10px;
-            padding: 6px 12px;
-            background-color: #007bff;
-            color: white;
-            border: none;
-            cursor: pointer;
-            border-radius: 4px;
-            z-index: 10;
-            transition: background-color 0.3s ease;
-        }
-        .copy-button:hover {
-            background-color: #0056b3;
-        }
-        .copy-button i {
-            font-size: 1.1em;
-        }
-
-        /* Media Queries para Responsividade */
-        @media (max-width: 1024px) {
-            .content {
-                flex-direction: column;
-                align-items: center;
-            }
-            .parameters, .plot-container {
-                width: 95%;
-                min-width: 0;
-            }
-            .plot-container {
-                margin-top: 30px;
-            }
-            #plot {
-                height: 500px;
-            }
-        }
-
-        @media (max-width: 600px) {
-            h1 {
-                font-size: 22px;
-            }
-            label span {
-                max-width: 95%;
-                font-size: 0.8em;
-            }
-            input[type="number"], input[type="text"] {
-                width: 95%;
-            }
-            #plot {
-                height: 400px;
-            }
-            textarea {
-                font-size: 0.8em;
-            }
-        }
-    </style>
+    <link rel="stylesheet" href="styles.css">
     <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.0/papaparse.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjs/11.7.0/math.js" integrity="sha512-jVMFcnqV+KC+WjVz+SGlD+MTvyq670x+cJC/TRh45dGlH+Ahz2h8dY+k/gZxxp/fdWvCq+Xgc+4T+Wf+wdS+mQ==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
 </head>
 <body>
     <div class="container">
@@ -260,12 +82,34 @@
 
                 <button onclick="generatePlot()">Gerar Station</button>
 
+                <label for="phi_angle">
+                    Ângulo Phi (°):
+                    <span>Ângulo Phi para o cálculo do campo elétrico.</span>
+                </label>
+                <input type="number" id="phi_angle" value="90" min="-180" max="180">
+
+                <button onclick="generateAFPlot()">Gerar Gráfico de Campo Elétrico</button>
+                
+                <div class="progress-bar-container">
+                    <div id="progress-bar" class="progress-bar"></div>
+                    <div id="progress-text" class="progress-text">0%</div>
+                </div>
+
+                <div id="sll-container">
+                    <span>SLL:</span>
+                    <span id="sll-value"></span>
+                </div>
+
                 <div id="message-container"></div>
             </div>
 
             <div class="plot-container">
                 <div id="plot"></div>
             </div>
+        </div>
+        
+        <div class="plot-container">
+            <div id="af-plot"></div>
         </div>
 
         <div class="snippet-container">
@@ -274,298 +118,6 @@
         </div>
     </div>
 
-    <script>
-        // ==================== Parâmetros do Tile ====================
-        const dx = 176.0695885;
-        const dy = 167.5843071;
-        const N = 2;
-        const M = 8;
-
-        // Cria o array do tile
-        let tile_array = createPlanarArray(dx, dy, N, M);
-        tile_array = tile_array.map(point => [point[0] - tile_array.reduce((sum, p) => sum + p[0], 0) / tile_array.length, point[1] - tile_array.reduce((sum, p) => sum + p[1], 0) / tile_array.length]);
-
-        const tile_size_x = Math.max(...tile_array.map(p => p[0])) - Math.min(...tile_array.map(p => p[0]));
-        const tile_size_y = Math.max(...tile_array.map(p => p[1])) - Math.min(...tile_array.map(p => p[1]));
-        const tile_size = Math.sqrt(tile_size_x ** 2 + tile_size_y ** 2);
-
-        function createPlanarArray(dx, dy, N, M) {
-            const array = [];
-            for (let i = 0; i < N; i++) {
-                for (let j = 0; j < M; j++) {
-                    array.push([i * dx, j * dy]);
-                }
-            }
-            return array;
-        }
-
-        function rotatePoints(points, angle) {
-            const R = [
-                [Math.cos(angle), -Math.sin(angle)],
-                [Math.sin(angle), Math.cos(angle)]
-            ];
-            return points.map(point => [
-                point[0] * R[0][0] + point[1] * R[0][1],
-                point[0] * R[1][0] + point[1] * R[1][1]
-            ]);
-        }
-        
-        function isCollision(tile1_center, tile1_angle, tile2_center, tile2_angle, tile_array) {
-            const tile_size_x = Math.max(...tile_array.map(p => p[0])) - Math.min(...tile_array.map(p => p[0]));
-            const tile_size_y = Math.max(...tile_array.map(p => p[1])) - Math.min(...tile_array.map(p => p[1]));
-        
-            function createHitbox(center, angle, size_x, size_y) {
-                const half_x = size_x / 2;
-                const half_y = size_y / 2;
-        
-                let corners = [
-                    [-half_x, -half_y],
-                    [half_x, -half_y],
-                    [half_x, half_y],
-                    [-half_x, half_y]
-                ];
-        
-                const rotated_corners = rotatePoints(corners, angle);
-                return rotated_corners.map(corner => [corner[0] + center[0], corner[1] + center[1]]);
-            }
-        
-            const hitbox1 = createHitbox(tile1_center, tile1_angle, tile_size_x, tile_size_y);
-            const hitbox2 = createHitbox(tile2_center, tile2_angle, tile_size_x, tile_size_y);
-        
-            function separatingAxis(hitbox1, hitbox2) {
-                for (let i = 0; i < 4; i++) {
-                    const edge = [hitbox1[(i + 1) % 4][0] - hitbox1[i][0], hitbox1[(i + 1) % 4][1] - hitbox1[i][1]];
-                    const axis = [-edge[1], edge[0]];
-        
-                    const projection1 = hitbox1.map(point => point[0] * axis[0] + point[1] * axis[1]);
-                    const projection2 = hitbox2.map(point => point[0] * axis[0] + point[1] * axis[1]);
-        
-                    const min1 = Math.min(...projection1);
-                    const max1 = Math.max(...projection1);
-                    const min2 = Math.min(...projection2);
-                    const max2 = Math.max(...projection2);
-        
-                    if (max1 < min2 || max2 < min1) {
-                        return true;
-                    }
-                }
-                return false;
-            }
-        
-            // Verifica se há colisão
-            if (!(separatingAxis(hitbox1, hitbox2) || separatingAxis(hitbox2, hitbox1))) {
-                // Se houver colisão, calcula o centro do tile
-                const tileCenter = [(hitbox2[0][0] + hitbox2[2][0]) / 2, (hitbox2[0][1] + hitbox2[2][1]) / 2];
-                
-                // Retorna true para indicar colisão, e as coordenadas do centro do tile
-                return { collision: true, tileCenter: tileCenter };
-            }
-        
-            // Se não houver colisão, retorna false e null para as coordenadas do centro
-            return { collision: false, tileCenter: null };
-        }
-
-        function createStationArray(tiles_config, tile_array) {
-            const array_tot = [];
-            const collision_messages = [];
-            const tile_array_centered = tile_array.map(point => [
-                point[0] - tile_array.reduce((sum, p) => sum + p[0], 0) / tile_array.length,
-                point[1] - tile_array.reduce((sum, p) => sum + p[1], 0) / tile_array.length
-            ]);
-        
-            for (let i = 0; i < tiles_config.length; i++) {
-                const tile_center = tiles_config[i][0];
-                const tile_angle = tiles_config[i][1];
-                let valid_position = true;
-                let collisionInfo = null;
-        
-                for (let j = 0; j < i; j++) {
-                    const existing_tile_center = tiles_config[j][0];
-                    const existing_tile_angle = tiles_config[j][1];
-                    collisionInfo = isCollision(tile_center, tile_angle, existing_tile_center, existing_tile_angle, tile_array);
-                    if (collisionInfo.collision) {
-                        valid_position = false;
-                        break;
-                    }
-                }
-        
-                if (valid_position) {
-                    const rotated_tile = rotatePoints(tile_array_centered, tile_angle);
-                    const translated_tile = rotated_tile.map(point => [point[0] + tile_center[0], point[1] + tile_center[1]]);
-                    translated_tile.forEach(point => array_tot.push([...point, 0]));
-                } else {
-                    collision_messages.push(`Colisão detectada no tile ${i + 1}. Coordenadas do centro: (${collisionInfo.tileCenter[0].toFixed(2)}, ${collisionInfo.tileCenter[1].toFixed(2)}). Posição ignorada.`);
-                }
-            }
-        
-            return [array_tot, collision_messages];
-        }
-
-        function generateSpiralTileArrangement(
-            num_spirals = 6,
-            tiles_per_spiral = 5,
-            base_radius = 2.0,
-            radius_growth_factor = 1.5,
-            angle_offset_factor = 1 / 12,
-            angle_variation_factor = 0.0,
-            exponential_radius_factor = 0.0,
-            exponential_angle_factor = 0.0,
-            rotation_per_spiral = 0.0,
-            center_tile = true,
-            station_name = ''
-        ) {
-            const tile_arrangement = [];
-
-            if (center_tile) {
-                tile_arrangement.push([[0, 0], 0]);
-            }
-
-            for (let p = 0; p < num_spirals; p++) {
-                const spiral_angle = p * (2 * Math.PI / num_spirals) + p * rotation_per_spiral;
-                for (let i = 0; i < tiles_per_spiral; i++) {
-                    const r = (base_radius + i * radius_growth_factor) * (1 + exponential_radius_factor) ** i;
-                    const angle = (spiral_angle + i * Math.PI * angle_offset_factor + i * angle_variation_factor) * (1 + exponential_angle_factor) ** i;
-
-                    const x = r * Math.cos(angle);
-                    const y = r * Math.sin(angle);
-                    const orientation_angle = angle + Math.PI / 2;
-
-                    tile_arrangement.push([[x, y], orientation_angle]);
-                }
-            }
-
-            return tile_arrangement;
-        }
-
-        function generatePlot() {
-            const numSpirals = parseFloat(document.getElementById('num_spirals').value);
-            const tilesPerSpiral = parseFloat(document.getElementById('tiles_per_spiral').value);
-            const baseRadius = parseFloat(document.getElementById('base_radius').value);
-            const radiusGrowthFactor = parseFloat(document.getElementById('radius_growth_factor').value);
-            const angleOffsetFactor = parseFloat(document.getElementById('angle_offset_factor').value);
-            const angleVariationFactor = parseFloat(document.getElementById('angle_variation_factor').value);
-            const exponentialRadiusFactor = parseFloat(document.getElementById('exponential_radius_factor').value);
-            const exponentialAngleFactor = parseFloat(document.getElementById('exponential_angle_factor').value);
-            const rotationPerSpiral = parseFloat(document.getElementById('rotation_per_spiral').value);
-            const centerTile = document.getElementById('center_tile').checked;
-            const stationName = document.getElementById('station_name').value;
-
-            // Adaptação dos parâmetros para a função
-            const adaptedBaseRadius = baseRadius * tile_size;
-            const adaptedRadiusGrowthFactor = radiusGrowthFactor * tile_size;
-
-            const tileArrangement = generateSpiralTileArrangement(
-                numSpirals,
-                tilesPerSpiral,
-                adaptedBaseRadius,
-                adaptedRadiusGrowthFactor,
-                angleOffsetFactor,
-                angleVariationFactor,
-                exponentialRadiusFactor,
-                exponentialAngleFactor,
-                rotationPerSpiral,
-                centerTile,
-                stationName
-            );
-
-            const [station, collisionMessages] = createStationArray(tileArrangement, tile_array);
-
-            displayPlot(station, collisionMessages, stationName);
-            updateCodeSnippet();
-        }
-
-        function displayPlot(stationData, collisionMessages, stationName) {
-            const xValues = stationData.map(point => point[0]);
-            const yValues = stationData.map(point => point[1]);
-
-            const plotData = [{
-                x: xValues,
-                y: yValues,
-                mode: 'markers',
-                type: 'scatter'
-            }];
-
-            const layout = {
-                title: stationName,
-                autosize: true,
-                xaxis: {
-                    scaleanchor: "y",
-                    scaleratio: 1
-                },
-                yaxis: {
-                    scaleanchor: "x",
-                    scaleratio: 1
-                }
-            };
-
-            Plotly.newPlot('plot', plotData, layout);
-
-            // Exibe mensagens de colisão
-            const messageContainer = document.getElementById('message-container');
-            messageContainer.innerHTML = '';
-            if (collisionMessages && collisionMessages.length > 0) {
-                collisionMessages.forEach(message => {
-                    displayMessage(message, 'warning');
-                });
-            } else {
-                displayMessage('Nenhuma colisão detectada.', 'success');
-            }
-        }
-
-        function displayMessage(message, type) {
-            const messageContainer = document.getElementById('message-container');
-            const div = document.createElement('div');
-            div.className = `message ${type === 'success' ? 'success' : ''}`;
-            div.textContent = message;
-            messageContainer.appendChild(div);
-        }
-
-        function updateCodeSnippet() {
-            const numSpirals = document.getElementById('num_spirals').value;
-            const tilesPerSpiral = document.getElementById('tiles_per_spiral').value;
-            const baseRadius = document.getElementById('base_radius').value;
-            const radiusGrowthFactor = document.getElementById('radius_growth_factor').value;
-            const angleOffsetFactor = document.getElementById('angle_offset_factor').value;
-            const angleVariationFactor = document.getElementById('angle_variation_factor').value;
-            const exponentialRadiusFactor = document.getElementById('exponential_radius_factor').value;
-            const exponentialAngleFactor = document.getElementById('exponential_angle_factor').value;
-            const rotationPerSpiral = document.getElementById('rotation_per_spiral').value;
-            const centerTile = document.getElementById('center_tile').checked;
-            const stationName = document.getElementById('station_name').value;
-
-            const snippet = `array_tiles_station = generate_spiral_tile_arrangement(
-    num_spirals=${numSpirals},
-    tiles_per_spiral=${tilesPerSpiral},
-    base_radius=${baseRadius} * tile_size,
-    radius_growth_factor=${radiusGrowthFactor} * tile_size,
-    angle_offset_factor=${angleOffsetFactor},
-    angle_variation_factor=${angleVariationFactor},
-    exponential_radius_factor=${exponentialRadiusFactor},
-    exponential_angle_factor=${exponentialAngleFactor},
-    rotation_per_spiral=${rotationPerSpiral},
-    center_tile=${centerTile ? 'True' : 'False'},
-    station_name='${stationName}'
-)`;
-            document.getElementById('code-snippet').value = snippet;
-        }
-
-        let copyIconTimeout;
-
-        function copySnippet() {
-            const snippetTextarea = document.getElementById('code-snippet');
-            snippetTextarea.select();
-            document.execCommand('copy');
-
-            const copyButton = document.querySelector('.copy-button i');
-            copyButton.classList.remove('fa-paste');
-            copyButton.classList.add('fa-check');
-
-            clearTimeout(copyIconTimeout);
-            copyIconTimeout = setTimeout(() => {
-                copyButton.classList.remove('fa-check');
-                copyButton.classList.add('fa-paste');
-            }, 2000);
-        }
-    </script>
+    <script src="scripts.js"></script>
 </body>
 </html>

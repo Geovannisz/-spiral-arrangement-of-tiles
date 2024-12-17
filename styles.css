@@ -1,0 +1,214 @@
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    margin: 0;
+    padding: 0;
+    background-color: #f8f9fa;
+    color: #343a40;
+}
+.container {
+    width: 95%;
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 20px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    background-color: white;
+    border-radius: 8px;
+}
+h1 {
+    color: #28a745;
+    margin-bottom: 30px;
+    text-align: center;
+    font-weight: bold;
+}
+.content {
+    display: flex;
+    align-items: start;
+    gap: 30px;
+}
+.parameters {
+    width: 30%;
+    min-width: 280px;
+}
+.plot-container {
+    width: 70%;
+    display: flex;
+    justify-content: center;
+}
+label {
+    display: block;
+    margin-top: 15px;
+    margin-bottom: 5px;
+    position: relative;
+    font-weight: 600;
+}
+label span {
+    position: absolute;
+    bottom: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    width: max-content;
+    max-width: 350px;
+    background-color: #343a40;
+    color: #fff;
+    padding: 8px 12px;
+    border-radius: 6px;
+    visibility: hidden;
+    opacity: 0;
+    transition: visibility 0s, opacity 0.3s ease;
+    z-index: 1;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+    font-size: 0.9em;
+}
+label:hover span {
+    visibility: visible;
+    opacity: 1;
+}
+input[type="number"], input[type="text"], input[type="checkbox"] {
+    padding: 8px;
+    border: 1px solid #ced4da;
+    border-radius: 4px;
+    font-size: 0.9em;
+    margin-bottom: 10px;
+    width: calc(100% - 18px);
+}
+input[type="number"], input[type="text"] {
+    width: 120px;
+}
+button {
+    margin-top: 25px;
+    padding: 12px 24px;
+    background-color: #28a745;
+    color: white;
+    border: none;
+    cursor: pointer;
+    border-radius: 6px;
+    font-weight: 500;
+    transition: background-color 0.3s ease;
+}
+button:hover {
+    background-color: #218838;
+}
+#plot {
+    width: 100%;
+    max-width: 800px;
+    height: 600px;
+}
+.message {
+    margin-top: 15px;
+    padding: 12px;
+    background-color: #f8d7da;
+    border: 1px solid #f5c6cb;
+    border-radius: 4px;
+    color: #721c24;
+}
+.message.success {
+    background-color: #d4edda;
+    border-color: #c3e6cb;
+    color: #155724;
+}
+.snippet-container {
+    margin-top: 30px;
+    position: relative;
+}
+textarea {
+    width: calc(100% - 20px);
+    height: 220px;
+    margin-top: 15px;
+    padding: 10px;
+    border: 1px solid #ced4da;
+    border-radius: 4px;
+    font-family: 'Courier New', Courier, monospace;
+    font-size: 0.85em;
+    resize: vertical;
+}
+.copy-button {
+    position: absolute;
+    top: 15px;
+    right: 10px;
+    padding: 6px 12px;
+    background-color: #007bff;
+    color: white;
+    border: none;
+    cursor: pointer;
+    border-radius: 4px;
+    z-index: 10;
+    transition: background-color 0.3s ease;
+}
+.copy-button:hover {
+    background-color: #0056b3;
+}
+.copy-button i {
+    font-size: 1.1em;
+}
+.progress-bar-container {
+    margin-top: 10px;
+    width: 100%;
+    background-color: #e9ecef;
+    border-radius: 4px;
+    overflow: hidden;
+}
+.progress-bar {
+    height: 20px;
+    background-color: #28a745;
+    width: 0%;
+    transition: width 0.3s ease;
+}
+.progress-text {
+    text-align: center;
+    font-size: 0.9em;
+    color: #343a40;
+}
+#af-plot {
+    width: 100%;
+    max-width: 800px;
+    height: 400px;
+    margin-top: 30px;
+}
+#sll-container {
+    margin-top: 15px;
+    padding: 10px;
+    border: 1px solid #ced4da;
+    border-radius: 4px;
+    background-color: #f8f9fa;
+}
+#sll-value {
+    font-weight: bold;
+    margin-left: 5px;
+}
+
+/* Media Queries para Responsividade */
+@media (max-width: 1024px) {
+    .content {
+        flex-direction: column;
+        align-items: center;
+    }
+    .parameters, .plot-container {
+        width: 95%;
+        min-width: 0;
+    }
+    .plot-container {
+        margin-top: 30px;
+    }
+    #plot {
+        height: 500px;
+    }
+}
+
+@media (max-width: 600px) {
+    h1 {
+        font-size: 22px;
+    }
+    label span {
+        max-width: 95%;
+        font-size: 0.8em;
+    }
+    input[type="number"], input[type="text"] {
+        width: 95%;
+    }
+    #plot {
+        height: 400px;
+    }
+    textarea {
+        font-size: 0.8em;
+    }
+}
