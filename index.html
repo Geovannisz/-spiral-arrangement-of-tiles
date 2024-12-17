@@ -2,11 +2,9 @@
 <html>
 <head>
     <title>Gerador de Arranjo de Tiles</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.1/css/all.min.css">
     <link rel="stylesheet" href="styles.css">
     <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.0/papaparse.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjs/11.7.0/math.js" integrity="sha512-jVMFcnqV+KC+WjVz+SGlD+MTvyq670x+cJC/TRh45dGlH+Ahz2h8dY+k/gZxxp/fdWvCq+Xgc+4T+Wf+wdS+mQ==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.1/css/all.min.css">
 </head>
 <body>
     <div class="container">
@@ -80,42 +78,37 @@
                 </label>
                 <input type="text" id="station_name" value="Station">
 
-                <button onclick="generatePlot()">Gerar Station</button>
-
-                <label for="phi_angle">
-                    Ângulo Phi (°):
-                    <span>Ângulo Phi para o cálculo do campo elétrico.</span>
-                </label>
-                <input type="number" id="phi_angle" value="90" min="-180" max="180">
-
-                <button onclick="generateAFPlot()">Gerar Gráfico de Campo Elétrico</button>
-                
-                <div class="progress-bar-container">
-                    <div id="progress-bar" class="progress-bar"></div>
-                    <div id="progress-text" class="progress-text">0%</div>
-                </div>
-
-                <div id="sll-container">
-                    <span>SLL:</span>
-                    <span id="sll-value"></span>
-                </div>
+                <button id="generate-station-button" onclick="generatePlot()">Gerar Station</button>
 
                 <div id="message-container"></div>
+
+                <label for="phi_angle">
+                  Ângulo Phi (°):
+                  <span>Define o ângulo Phi para o cálculo do campo elétrico.</span>
+                </label>
+                <input type="number" id="phi_angle" value="90" min="-180" max="180">
+      
+                <button id="generate-graph-button" onclick="generateGraph()">Gerar Gráfico</button>
+
+                <div id="progress-bar-container" style="display: none;">
+                  <div id="progress-bar"></div>
+                  <div id="progress-text">0%</div>
+                </div>
             </div>
 
             <div class="plot-container">
                 <div id="plot"></div>
             </div>
         </div>
-        
-        <div class="plot-container">
-            <div id="af-plot"></div>
-        </div>
 
         <div class="snippet-container">
             <textarea id="code-snippet" readonly></textarea>
             <button class="copy-button" onclick="copySnippet()"><i class="fas fa-paste"></i></button>
         </div>
+        <div id="sll-display-container">
+          <div id="sll-value">SLL: --</div>
+        </div>
+        <div id="graph-container"></div>
     </div>
 
     <script src="scripts.js"></script>
