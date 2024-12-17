@@ -2,11 +2,10 @@
 <html>
 <head>
     <title>Gerador de Arranjo de Tiles</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.1/css/all.min.css">
     <link rel="stylesheet" href="styles.css">
     <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjs/11.8.0/math.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.0/papaparse.min.js"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.1/css/all.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/numeric/1.2.6/numeric.min.js"></script>
 </head>
 <body>
     <div class="container">
@@ -80,26 +79,28 @@
                 </label>
                 <input type="text" id="station_name" value="Station">
 
-                <button id="generate-station-button" onclick="generatePlot()">Gerar Station</button>
-
-                <div id="message-container"></div>
-
                 <label for="phi_angle">
-                  Ângulo Phi (°):
-                  <span>Define o ângulo Phi para o cálculo do campo elétrico.</span>
+                    Ângulo Phi (em graus):
+                    <span>Define o ângulo Phi para o cálculo do campo elétrico.</span>
                 </label>
                 <input type="number" id="phi_angle" value="90" min="-180" max="180">
-      
-                <button id="generate-graph-button" onclick="generateGraph()">Gerar Gráfico</button>
 
-                <div id="progress-bar-container" style="display: none;">
-                  <div id="progress-bar"></div>
-                  <div id="progress-text">0%</div>
+                <button onclick="generatePlot()">Gerar Station</button>
+                <button onclick="generateFieldPlot()">Gerar Gráfico do Campo Elétrico</button>
+
+                <div id="message-container"></div>
+                <div id="progress-container" style="display: none;">
+                    <progress id="progress-bar" value="0" max="100"></progress>
+                    <span id="progress-text">0%</span>
+                </div>
+                <div id="sll-container" style="display: none;">
+                    <span>SLL: </span><span id="sll-value"></span>
                 </div>
             </div>
 
             <div class="plot-container">
                 <div id="plot"></div>
+                <div id="field-plot-container"></div>
             </div>
         </div>
 
@@ -107,10 +108,6 @@
             <textarea id="code-snippet" readonly></textarea>
             <button class="copy-button" onclick="copySnippet()"><i class="fas fa-paste"></i></button>
         </div>
-        <div id="sll-display-container">
-          <div id="sll-value">SLL: --</div>
-        </div>
-        <div id="graph-container"></div>
     </div>
 
     <script src="scripts.js"></script>

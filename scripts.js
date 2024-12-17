@@ -12,6 +12,20 @@ const tile_size_x = Math.max(...tile_array.map(p => p[0])) - Math.min(...tile_ar
 const tile_size_y = Math.max(...tile_array.map(p => p[1])) - Math.min(...tile_array.map(p => p[1]));
 const tile_size = Math.sqrt(tile_size_x ** 2 + tile_size_y ** 2);
 
+// Cache para armazenar os resultados do AF
+const computeAFCache = {};
+
+// Carrega o cache do localStorage, se existir
+const cachedData = localStorage.getItem('computeAFCache');
+if (cachedData) {
+    Object.assign(computeAFCache, JSON.parse(cachedData));
+}
+
+// Função para salvar o cache no localStorage
+function saveCache() {
+    localStorage.setItem('computeAFCache', JSON.stringify(computeAFCache));
+}
+
 function createPlanarArray(dx, dy, N, M) {
     const array = [];
     for (let i = 0; i < N; i++) {
@@ -235,6 +249,331 @@ function displayPlot(stationData, collisionMessages, stationName) {
     }
 }
 
+async function generateFieldPlot() {
+    const stationName = document.getElementById('station_name').value;
+    const phiAngle = parseFloat(document.getElementById('phi_angle').value);
+
+    const numSpirals = parseFloat(document.getElementById('num_spirals').value);
+    const tilesPerSpiral = parseFloat(document.getElementById('tiles_per_spiral').value);
+    const baseRadius = parseFloat(document.getElementById('base_radius').value);
+    const radiusGrowthFactor = parseFloat(document.getElementById('radius_growth_factor').value);
+    const angleOffsetFactor = parseFloat(document.getElementById('angle_offset_factor').value);
+    const angleVariationFactor = parseFloat(document.getElementById('angle_variation_factor').value);
+    const exponentialRadiusFactor = parseFloat(document.getElementById('exponential_radius_factor').value);
+    const exponentialAngleFactor = parseFloat(document.getElementById('exponential_angle_factor').value);
+    const rotationPerSpiral = parseFloat(document.getElementById('rotation_per_spiral').value);
+    const centerTile = document.getElementById('center_tile').checked;
+
+    // Adaptação dos parâmetros para a função
+    const adaptedBaseRadius = baseRadius * tile_size;
+    const adaptedRadiusGrowthFactor = radiusGrowthFactor * tile_size;
+
+    const tileArrangement = generateSpiralTileArrangement(
+        numSpirals,
+        tilesPerSpiral,
+        adaptedBaseRadius,
+        adaptedRadiusGrowthFactor,
+        angleOffsetFactor,
+        angleVariationFactor,
+        exponentialRadiusFactor,
+        exponentialAngleFactor,
+        rotationPerSpiral,
+        centerTile,
+        stationName
+    );
+
+    const [station, collisionMessages] = createStationArray(tileArrangement, tile_array);
+
+    const progressContainer = document.getElementById('progress-container');
+    const progressBar = document.getElementById('progress-bar');
+    const progressText = document.getElementById('progress-text');
+    progressContainer.style.display = 'block';
+    progressBar.value = 0;
+    progressText.innerText = '0%';
+
+    const result = await computeAFAndField(station, phiAngle, (progress) => {
+        progressBar.value = progress;
+        progressText.innerText = `${progress}%`;
+    });
+
+    progressContainer.style.display = 'none';
+
+    if (result) {
+        displayFieldPlot(result.af, result.thetaValues, stationName, phiAngle);
+        displaySLL(result.sll, result.af, result.thetaValues);
+    }
+}
+
+async function readTable(file) {
+    const response = await fetch(file);
+    const csvData = await response.text();
+    const parsedData = Papa.parse(csvData, {
+        header: true,
+        dynamicTyping: true,
+        skipEmptyLines: true
+    }).data;
+
+    // Converte milivolts para volts e calcula os componentes complexos
+    const processedData = parsedData.map(row => {
+        const newRow = { ...row };
+        for (const col of ['re(rETheta)', 'im(rETheta)', 're(rEPhi)', 'im(rEPhi)']) {
+            if (`${col} [mV]` in newRow) {
+                newRow[`${col} [V]`] = newRow[`${col} [mV]`] * 1e-3;
+                delete newRow[`${col} [mV]`];
+            }
+        }
+        newRow['rETheta [V]'] = newRow['re(rETheta) [V]'] + numeric.mul(numeric.complex(0, 1), newRow['im(rETheta) [V]']);
+        newRow['rEPhi [V]'] = newRow['re(rEPhi) [V]'] + numeric.mul(numeric.complex(0, 1), newRow['im(rEPhi) [V]']);
+        newRow['rETotal [V]'] = numeric.sqrt(numeric.add(numeric.pow(numeric.abs(newRow['rETheta [V]']), 2), numeric.pow(numeric.abs(newRow['rEPhi [V]']), 2)));
+        return newRow;
+    });
+
+    return processedData;
+}
+
+function rotateField(data, angleRad) {
+    const rotatedData = JSON.parse(JSON.stringify(data)); // Deep copy
+    const angleDeg = numeric.rad2deg(angleRad);
+
+    rotatedData.forEach(row => {
+        if (row['Theta [deg]'] === angleDeg) {
+            const rEThetaVal = row['rETheta [V]'];
+            const rEPhiVal = row['rEPhi [V]'];
+
+            const rotationMatrix = [
+                [numeric.cos(angleRad), -numeric.sin(angleRad)],
+                [numeric.sin(angleRad), numeric.cos(angleRad)]
+            ];
+
+            const rotatedComponents = numeric.dot(rotationMatrix, [rEThetaVal, rEPhiVal]);
+
+            row['rETheta [V]'] = rotatedComponents[0];
+            row['rEPhi [V]'] = rotatedComponents[1];
+            row['rETotal [V]'] = numeric.sqrt(numeric.add(numeric.pow(numeric.abs(row['rETheta [V]']), 2), numeric.pow(numeric.abs(row['rEPhi [V]']), 2)));
+        }
+    });
+
+    return rotatedData;
+}
+
+function computeAF(theta, phi, array, k = 2 * Math.PI / 300, theta0 = 0, phi0 = 0, centralize = true, initialPhase = null, normalize = false) {
+    const thetaRad = numeric.mul(theta, Math.PI / 180);
+    const phiRad = numeric.mul(phi, Math.PI / 180);
+    const theta0Rad = theta0 * Math.PI / 180;
+    const phi0Rad = phi0 * Math.PI / 180;
+
+    const scanVector = [Math.sin(theta0Rad) * Math.cos(phi0Rad), Math.sin(theta0Rad) * Math.sin(phi0Rad), Math.cos(theta0Rad)];
+
+    if (centralize) {
+        const mean = numeric.div(numeric.sum(array, 0), array.length);
+        array = numeric.sub(array, mean);
+    }
+
+    const obsVectors = [];
+    for (let i = 0; i < thetaRad.length; i++) {
+        obsVectors.push([
+            Math.sin(thetaRad[i]) * Math.cos(phiRad[i]),
+            Math.sin(thetaRad[i]) * Math.sin(phiRad[i]),
+            Math.cos(thetaRad[i])
+        ]);
+    }
+
+    const diffs = numeric.sub(obsVectors, scanVector);
+
+    let phases;
+    if (initialPhase === null) {
+        phases = numeric.mul(k, numeric.dot(diffs, numeric.transpose(array)));
+    } else {
+        const initialPhaseRad = numeric.mul(initialPhase, Math.PI / 180);
+        phases = numeric.add(numeric.mul(k, numeric.dot(diffs, numeric.transpose(array))), initialPhaseRad);
+    }
+
+    const AF = numeric.sum(numeric.exp(numeric.mul(numeric.complex(0, 1), phases)), 1);
+
+    return normalize ? numeric.div(AF, array.length) : AF;
+}
+
+async function computeAFAndField(station, phiAngle, updateProgress) {
+    const data = await readTable('data/rE_table_vivaldi.csv');
+    const theta = data.map(row => row['Theta [deg]']);
+    const phi = data.map(row => row['Phi [deg]']);
+
+    const uniqueTheta = [...new Set(theta)];
+    const uniquePhi = [...new Set(phi)];
+
+    const k = 2 * Math.PI / 300;
+    const theta0 = 0;
+    const phi0 = 0;
+
+    // Cria uma chave única para os inputs da função compute_AF
+    const inputKey = JSON.stringify({ station, theta: uniqueTheta, phi: uniquePhi, k, theta0, phi0 });
+
+    // Verifica se o resultado já está no cache
+    if (computeAFCache[inputKey]) {
+        console.log("Usando resultado do cache...");
+        return computeAFCache[inputKey];
+    }
+
+    // Rotaciona os campos para cada tile na estação
+    const rotatedFields = [];
+    let progress = 0;
+    const totalTiles = station.length;
+    const tile_array_centered = tile_array.map(point => [
+        point[0] - tile_array.reduce((sum, p) => sum + p[0], 0) / tile_array.length,
+        point[1] - tile_array.reduce((sum, p) => sum + p[1], 0) / tile_array.length
+    ]);
+    for (let i = 0; i < totalTiles; i++) {
+        const tile_center = station[i][0];
+        const tile_angle = station[i][1];
+
+        const rotated_tile = rotatePoints(tile_array_centered, tile_angle);
+        const translated_tile = rotated_tile.map(point => [point[0] + tile_center[0], point[1] + tile_center[1]]);
+
+        rotatedFields.push(rotateField(data, tile_angle));
+
+        progress = Math.round(((i + 1) / totalTiles) * 50); // Metade do progresso total
+        updateProgress(progress);
+    }
+
+    // Calcula o AF
+    const af = computeAF(uniqueTheta, uniquePhi, station, k, theta0, phi0);
+
+    // Aplica o AF no campo
+    const applied_field = applyAFOnField(data, af, rotatedFields, uniqueTheta, uniquePhi);
+
+    // Calcula o SLL
+    const sll = calculateSLL(uniqueTheta, af, phiAngle);
+
+    // Filtra os valores de theta para o ângulo phi fornecido
+    const thetaValues = [];
+    for (let i = 0; i < theta.length; i++) {
+        if (phi[i] === phiAngle) {
+            thetaValues.push(theta[i]);
+        }
+    }
+
+    // Armazena o resultado no cache
+    const result = { af, thetaValues, applied_field, sll };
+    computeAFCache[inputKey] = result;
+
+    // Salva o cache atualizado no localStorage
+    saveCache();
+
+    updateProgress(100); // Progresso completo
+    return result;
+}
+
+function applyAFOnField(field, af, rotatedFields, theta, phi) {
+    const out_field = [];
+    const uniqueTheta = [...new Set(theta)]; // Garante que os valores de Theta sejam únicos
+
+    for (let i = 0; i < uniqueTheta.length; i++) {
+        for (let j = 0; j < phi.length; j++) {
+            const out_row = {
+                'Theta [deg]': uniqueTheta[i],
+                'Phi [deg]': phi[j],
+                'rETheta [V]': numeric.complex(0, 0),
+                'rEPhi [V]': numeric.complex(0, 0)
+            };
+
+            // Soma os campos rotacionados, multiplicados pelo AF
+            rotatedFields.forEach((rotated_field, index) => {
+                const field_row = rotated_field.find(row => row['Theta [deg]'] === uniqueTheta[i] && row['Phi [deg]'] === phi[j]);
+                if (field_row) {
+                    const af_value = af[i];
+                    out_row['rETheta [V]'] = numeric.add(out_row['rETheta [V]'], numeric.mul(field_row['rETheta [V]'], af_value));
+                    out_row['rEPhi [V]'] = numeric.add(out_row['rEPhi [V]'], numeric.mul(field_row['rEPhi [V]'], af_value));
+                }
+            });
+
+            // Calcula a magnitude total do campo elétrico
+            out_row['rETotal [V]'] = numeric.sqrt(numeric.add(numeric.pow(numeric.abs(out_row['rETheta [V]']), 2), numeric.pow(numeric.abs(out_row['rEPhi [V]']), 2)));
+            out_field.push(out_row);
+        }
+    }
+    return out_field;
+}
+
+function displayFieldPlot(af, thetaValues, stationName, phiAngle) {
+    const fieldPlotContainer = document.getElementById('field-plot-container');
+    fieldPlotContainer.innerHTML = '';
+
+    const afValues = af.map(value => numeric.abs(value));
+
+    const plotData = [{
+        x: thetaValues,
+        y: afValues,
+        mode: 'lines',
+        type: 'scatter'
+    }];
+
+    const layout = {
+        title: `${stationName} - Campo Elétrico (Phi = ${phiAngle}°)`,
+        xaxis: {
+            title: 'Theta (deg)',
+            range: [-90, 90]
+        },
+        yaxis: {
+            title: 'Magnitude do Campo Elétrico (V)'
+        },
+        autosize: true
+    };
+
+    Plotly.newPlot('field-plot-container', plotData, layout);
+}
+
+function calculateSLL(theta, af, phiAngle) {
+    const afFiltered = [];
+    const thetaFiltered = [];
+
+    for (let i = 0; i < theta.length; i++) {
+        if (phiAngle === 90 && theta[i] >= -90 && theta[i] <= 90) {
+            afFiltered.push(numeric.abs(af[i]));
+            thetaFiltered.push(theta[i]);
+        }
+    }
+
+    let mainPeakIndexFiltered = 0;
+    for (let i = 0; i < thetaFiltered.length; i++) {
+        if (thetaFiltered[i] === 0) {
+            mainPeakIndexFiltered = i;
+            break;
+        }
+    }
+
+    const mainPeakValue = afFiltered[mainPeakIndexFiltered];
+    const peaks = [];
+
+    for (let i = 1; i < afFiltered.length - 1; i++) {
+        if (afFiltered[i] > afFiltered[i - 1] && afFiltered[i] > afFiltered[i + 1] && i !== mainPeakIndexFiltered) {
+            peaks.push(afFiltered[i]);
+        }
+    }
+
+    peaks.sort((a, b) => b - a);
+
+    const sll = peaks.length > 0 ? peaks[0] / mainPeakValue : 0;
+    return isFinite(sll) ? 20 * Math.log10(sll) : -Infinity;
+}
+
+function displaySLL(sll, af, theta) {
+    const sllContainer = document.getElementById('sll-container');
+    const sllValueSpan = document.getElementById('sll-value');
+    sllContainer.style.display = 'block';
+    sllValueSpan.innerText = `${sll.toFixed(2)} dB`;
+
+    // Normaliza o SLL para o intervalo de 0 a 1
+    const normalizedSLL = Math.max(0, Math.min(1, (sll + 30) / 30));
+
+    // Interpola entre vermelho (ruim) e verde (bom) com base no valor do SLL
+    const red = Math.round(255 * normalizedSLL);
+    const green = Math.round(255 * (1 - normalizedSLL));
+    const blue = 0;
+
+    // Define a cor de fundo do contêiner SLL
+    sllContainer.style.backgroundColor = `rgb(${red},${green},${blue})`;
+}
+
 function displayMessage(message, type) {
     const messageContainer = document.getElementById('message-container');
     const div = document.createElement('div');
@@ -288,288 +627,4 @@ function copySnippet() {
         copyButton.classList.remove('fa-check');
         copyButton.classList.add('fa-paste');
     }, 2000);
-}
-
-// ==================== Funções para o cálculo do Campo Elétrico ====================
-
-async function readTable(file) {
-  const response = await fetch(file);
-  const csvData = await response.text();
-  const parsedData = Papa.parse(csvData, { header: true }).data;
-
-  const data = parsedData.map(row => {
-    for (const col in row) {
-      if (row[col] === 'NaN') {
-        row[col] = '0';
-      }
-    }
-
-    const reETheta_mV = parseFloat(row['re(rETheta) [mV]'] || '0');
-    const imETheta_mV = parseFloat(row['im(rETheta) [mV]'] || '0');
-    const reEPhi_mV = parseFloat(row['re(rEPhi) [mV]'] || '0');
-    const imEPhi_mV = parseFloat(row['im(rEPhi) [mV]'] || '0');
-
-    const reETheta_V = reETheta_mV * 1e-3;
-    const imETheta_V = imETheta_mV * 1e-3;
-    const reEPhi_V = reEPhi_mV * 1e-3;
-    const imEPhi_V = imEPhi_mV * 1e-3;
-
-    const rETheta_V = math.complex(reETheta_V, imETheta_V);
-    const rEPhi_V = math.complex(reEPhi_V, imEPhi_V);
-
-    const rETotal_V = math.sqrt(math.add(math.square(math.abs(rETheta_V)), math.square(math.abs(rEPhi_V))));
-
-    return {
-      'Theta [deg]': parseFloat(row['Theta [deg]'] || '0'),
-      'Phi [deg]': parseFloat(row['Phi [deg]'] || '0'),
-      'rETheta [V]': rETheta_V,
-      'rEPhi [V]': rEPhi_V,
-      'rETotal [V]': rETotal_V
-    };
-  });
-
-  return data;
-}
-
-function computeAF(theta, phi, array, k = 2 * Math.PI / 300, theta_0 = 0, phi_0 = 0, centralize = true, initial_phase = null, normalize = false) {
-  const thetaRad = theta.map(t => t * Math.PI / 180);
-  const phiRad = phi.map(p => p * Math.PI / 180);
-  const theta0Rad = theta_0 * Math.PI / 180;
-  const phi0Rad = phi_0 * Math.PI / 180;
-
-  const scanVector = [Math.sin(theta0Rad) * Math.cos(phi0Rad), Math.sin(theta0Rad) * Math.sin(phi0Rad), Math.cos(theta0Rad)];
-
-  if (centralize) {
-    const centerX = array.reduce((sum, p) => sum + p[0], 0) / array.length;
-    const centerY = array.reduce((sum, p) => sum + p[1], 0) / array.length;
-    const centerZ = array.reduce((sum, p) => sum + p[2], 0) / array.length;
-    array = array.map(p => [p[0] - centerX, p[1] - centerY, p[2] - centerZ]);
-  }
-
-  const obsVectors = [];
-  for (let i = 0; i < thetaRad.length; i++) {
-    obsVectors.push([Math.sin(thetaRad[i]) * Math.cos(phiRad[i]), Math.sin(thetaRad[i]) * Math.sin(phiRad[i]), Math.cos(thetaRad[i])]);
-  }
-
-  const diffs = obsVectors.map(obs => [obs[0] - scanVector[0], obs[1] - scanVector[1], obs[2] - scanVector[2]]);
-
-  let AF = [];
-  if (initial_phase === null) {
-    for (let i = 0; i < diffs.length; i++) {
-      let sum = 0;
-      for (let j = 0; j < array.length; j++) {
-        const phase = k * (diffs[i][0] * array[j][0] + diffs[i][1] * array[j][1] + diffs[i][2] * array[j][2]);
-        sum += Math.cos(phase) + Math.sin(phase) * 1j;
-      }
-      AF.push(sum);
-    }
-  } else {
-    const initialPhaseRad = initial_phase.map(p => p * Math.PI / 180);
-    for (let i = 0; i < diffs.length; i++) {
-      let sum = 0;
-      for (let j = 0; j < array.length; j++) {
-        const phase = k * (diffs[i][0] * array[j][0] + diffs[i][1] * array[j][1] + diffs[i][2] * array[j][2]) + initialPhaseRad[j];
-        sum += Math.cos(phase) + Math.sin(phase) * 1j;
-      }
-      
-      AF.push(sum);
-    }
-  }
-
-  if (normalize) {
-    AF = AF.map(af => math.divide(af, array.length));
-  }
-
-  return AF;
-}
-
-function rotateField(data, angleRad) {
-  const angleDeg = angleRad * 180 / Math.PI;
-  const rotatedData = JSON.parse(JSON.stringify(data));
-
-  for (let i = 0; i < rotatedData.length; i++) {
-    if (rotatedData[i]['Theta [deg]'] === angleDeg) {
-      const rETheta = rotatedData[i]['rETheta [V]'];
-      const rEPhi = rotatedData[i]['rEPhi [V]'];
-
-      const rotationMatrix = [
-        [Math.cos(angleRad), -Math.sin(angleRad)],
-        [Math.sin(angleRad), Math.cos(angleRad)]
-      ];
-
-      const rotatedComponents = math.multiply(rotationMatrix, [rETheta, rEPhi]);
-
-      rotatedData[i]['rETheta [V]'] = rotatedComponents[0];
-      rotatedData[i]['rEPhi [V]'] = rotatedComponents[1];
-      rotatedData[i]['rETotal [V]'] = math.sqrt(math.add(math.square(math.abs(rotatedComponents[0])), math.square(math.abs(rotatedComponents[1]))));
-    }
-  }
-
-  return rotatedData;
-}
-
-function applyAFOnField(field, AF, rotatedFields) {
-  const outField = JSON.parse(JSON.stringify(field));
-
-  for (let i = 0; i < outField.length; i++) {
-    outField[i]['rETheta [V]'] = math.complex(0, 0);
-    outField[i]['rEPhi [V]'] = math.complex(0, 0);
-
-    for (let j = 0; j < rotatedFields.length; j++) {
-      const rotatedField = rotatedFields[j];
-      
-      // Encontra o índice correspondente no rotatedField
-      const fieldIndex = rotatedField.findIndex(row => row['Theta [deg]'] === field[i]['Theta [deg]'] && row['Phi [deg]'] === field[i]['Phi [deg]']);
-
-      if (fieldIndex !== -1) {
-        outField[i]['rETheta [V]'] = math.add(outField[i]['rETheta [V]'], math.multiply(rotatedField[fieldIndex]['rETheta [V]'], AF[i]));
-        outField[i]['rEPhi [V]'] = math.add(outField[i]['rEPhi [V]'], math.multiply(rotatedField[fieldIndex]['rEPhi [V]'], AF[i]));
-      }
-    }
-
-    outField[i]['rETotal [V]'] = math.sqrt(math.add(math.square(math.abs(outField[i]['rETheta [V]'])), math.square(math.abs(outField[i]['rEPhi [V]']))));
-  }
-
-  return outField;
-}
-
-function calculateSLL(theta, af) {
-  const mainPeakIndex = theta.indexOf(0);
-  const mainPeakValue = af[mainPeakIndex];
-
-  let peaks = [];
-  for (let i = 1; i < af.length - 1; i++) {
-    if (af[i] > af[i - 1] && af[i] > af[i + 1] && i !== mainPeakIndex) {
-      peaks.push(af[i]);
-    }
-  }
-
-  peaks.sort((a, b) => b - a);
-
-  if (peaks.length < 1) {
-    console.log("Não foi possível calcular o SLL: Menos de dois picos encontrados.");
-    return null;
-  }
-
-  const sll = peaks.length >= 1 ? math.abs(peaks[0]) / math.abs(mainPeakValue) : 0;
-  const sll_dB = 20 * Math.log10(sll);
-
-  return sll_dB;
-}
-
-async function generateGraph() {
-  const stationName = document.getElementById('station_name').value;
-  const phiAngle = parseFloat(document.getElementById('phi_angle').value);
-
-  const numSpirals = parseFloat(document.getElementById('num_spirals').value);
-  const tilesPerSpiral = parseFloat(document.getElementById('tiles_per_spiral').value);
-  const baseRadius = parseFloat(document.getElementById('base_radius').value);
-  const radiusGrowthFactor = parseFloat(document.getElementById('radius_growth_factor').value);
-  const angleOffsetFactor = parseFloat(document.getElementById('angle_offset_factor').value);
-  const angleVariationFactor = parseFloat(document.getElementById('angle_variation_factor').value);
-  const exponentialRadiusFactor = parseFloat(document.getElementById('exponential_radius_factor').value);
-  const exponentialAngleFactor = parseFloat(document.getElementById('exponential_angle_factor').value);
-  const rotationPerSpiral = parseFloat(document.getElementById('rotation_per_spiral').value);
-  const centerTile = document.getElementById('center_tile').checked;
-
-  // Adaptação dos parâmetros para a função
-  const adaptedBaseRadius = baseRadius * tile_size;
-  const adaptedRadiusGrowthFactor = radiusGrowthFactor * tile_size;
-
-  const tileArrangement = generateSpiralTileArrangement(
-      numSpirals,
-      tilesPerSpiral,
-      adaptedBaseRadius,
-      adaptedRadiusGrowthFactor,
-      angleOffsetFactor,
-      angleVariationFactor,
-      exponentialRadiusFactor,
-      exponentialAngleFactor,
-      rotationPerSpiral,
-      centerTile,
-      stationName
-  );
-
-  const [station, collisionMessages] = createStationArray(tileArrangement, tile_array);
-  const totalTiles = station.length;
-
-  const data = await readTable('https://geovannisz.github.io/spiral-arrangement-of-tiles/data/rE_table_vivaldi.csv');
-  const theta = data.map(row => row['Theta [deg]']);
-  const phi = data.map(row => row['Phi [deg]']);
-
-  // Cria uma chave única para os inputs da função compute_AF
-  const inputKey = JSON.stringify([theta, phi, station]);
-
-  // Verifica se o resultado já está no cache
-  let cache = localStorage.getItem('computeAFCache');
-  cache = cache ? JSON.parse(cache) : {};
-
-  let AF;
-  if (cache[inputKey]) {
-    console.log("Usando resultado do cache...");
-    AF = cache[inputKey].map(val => math.complex(val.re, val.im));
-  } else {
-    console.log("Calculando AF...");
-    AF = computeAF(theta, phi, station);
-    // Armazena o resultado no cache
-    cache[inputKey] = AF.map(val => ({ re: math.re(val), im: math.im(val) }));
-    localStorage.setItem('computeAFCache', JSON.stringify(cache));
-  }
-
-  const rotatedFields = [];
-  let processedTiles = 0;
-  const progressBarContainer = document.getElementById('progress-bar-container');
-  const progressBar = document.getElementById('progress-bar');
-  const progressText = document.getElementById('progress-text');
-
-  progressBarContainer.style.display = 'block';
-
-  for (let i = 0; i < tileArrangement.length; i++) {
-    const rotatedField = rotateField(data, tileArrangement[i][1]);
-    rotatedFields.push(rotatedField);
-
-    processedTiles++;
-    const progress = (processedTiles / totalTiles) * 100;
-    progressBar.style.width = `${progress}%`;
-    progressText.innerText = `${progress.toFixed(0)}%`;
-  }
-
-  const appliedField = applyAFOnField(data, AF, rotatedFields);
-  const filteredAppliedField = appliedField.filter(row => row['Phi [deg]'] === phiAngle && row['Theta [deg]'] >= -90 && row['Theta [deg]'] <= 90);
-  const xValues = filteredAppliedField.map(row => row['Theta [deg]']);
-  const yValues = filteredAppliedField.map(row => 20 * Math.log10(Math.abs(row['rETotal [V]'])));
-
-  const trace = {
-    x: xValues,
-    y: yValues,
-    mode: 'lines',
-    type: 'scatter'
-  };
-
-  const layout = {
-    title: `Campo Elétrico Aplicado (Phi = ${phiAngle}°)`,
-    xaxis: { title: 'Theta (deg)' },
-    yaxis: { title: 'rETotal (dBV)' },
-    autosize: true,
-  };
-
-  Plotly.newPlot('graph-container', [trace], layout);
-
-  progressBarContainer.style.display = 'none';
-
-  // Calcula e exibe o SLL
-  const afValues = xValues.map(angle => {
-    const index = theta.indexOf(angle);
-    return index !== -1 ? AF[index] : null;
-  });
-
-  const sll = calculateSLL(xValues, afValues.filter(val => val !== null));
-  const sllDisplay = document.getElementById('sll-value');
-  sllDisplay.innerText = `SLL: ${sll.toFixed(2)} dB`;
-
-  // Atualiza a cor do fundo do SLL
-  const sllRatio = (sll + 30) / 30; // Normaliza entre 0 e 1
-  const red = 255 * (1 - sllRatio);
-  const green = 255 * sllRatio;
-  sllDisplay.style.backgroundColor = `rgb(${red}, ${green}, 0)`;
 }
