@@ -533,7 +533,9 @@
             const centerTile = document.getElementById('center_tile').checked;
             const stationName = document.getElementById('station_name').value;
 
-            const snippet = `array_tiles_station = generate_spiral_tile_arrangement(
+            const snippet = `station = '${stationName}'
+
+array_tiles_station = generate_spiral_tile_arrangement(
     num_spirals=${numSpirals},
     tiles_per_spiral=${tilesPerSpiral},
     base_radius=${baseRadius} * tile_size,
@@ -543,8 +545,8 @@
     exponential_radius_factor=${exponentialRadiusFactor},
     exponential_angle_factor=${exponentialAngleFactor},
     rotation_per_spiral=${rotationPerSpiral},
-    center_tile=${centerTile ? 'True' : 'False'},
-    station_name='${stationName}'
+    center_tile=${centerTile},
+    station_name=station
 )`;
             document.getElementById('code-snippet').value = snippet;
         }
