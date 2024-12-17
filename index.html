@@ -2,10 +2,9 @@
 <html>
 <head>
     <title>Gerador de Arranjo de Tiles</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.1/css/all.min.css">
     <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.1/css/all.min.css">
     <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/numeric/1.2.6/numeric.min.js"></script>
 </head>
 <body>
     <div class="container">
@@ -13,7 +12,6 @@
 
         <div class="content">
             <div class="parameters">
-                <!-- Parâmetros -->
                 <label for="num_spirals">
                     Número de Espirais:
                     <span>Controla o número de espirais no arranjo.</span>
@@ -80,35 +78,28 @@
                 </label>
                 <input type="text" id="station_name" value="Station">
 
-                <!-- Campo de seleção para o ângulo Phi -->
                 <label for="phi_angle">
                     Ângulo Phi (em graus):
-                    <span>Define o ângulo Phi para o cálculo do SLL.</span>
+                    <span>Define o ângulo Phi para o cálculo do fator de arranjo. Varia de -180 a 180.</span>
                 </label>
                 <input type="number" id="phi_angle" value="90" min="-180" max="180">
 
-                <!-- Botão para gerar a station -->
                 <button onclick="generatePlot()">Gerar Station</button>
 
-                <!-- Botão para calcular o SLL -->
-                <button id="calculate-sll-button" onclick="calculateAndDisplaySLL()">Calcular SLL</button>
-
-                <!-- Div para exibir o valor do SLL -->
-                <div id="sll-container">
-                    <span id="sll-value"></span>
-                </div>
-
-                <!-- Mensagens -->
                 <div id="message-container"></div>
+
+                <div class="sll-container">
+                    <label for="sll-value">SLL (dB):</label>
+                    <div id="sll-value"></div>
+                    <button onclick="calculateAndDisplaySLL()">Calcular SLL</button>
+                </div>
             </div>
 
-            <!-- Plot -->
             <div class="plot-container">
                 <div id="plot"></div>
             </div>
         </div>
 
-        <!-- Código -->
         <div class="snippet-container">
             <textarea id="code-snippet" readonly></textarea>
             <button class="copy-button" onclick="copySnippet()"><i class="fas fa-paste"></i></button>
