@@ -69,7 +69,7 @@
             visibility: visible;
             opacity: 1;
         }
-        input[type="number"], input[type="text"], input[type="checkbox"] {
+        input[type="number"], input[type="text"], input[type="checkbox"], select {
             padding: 8px;
             border: 1px solid #ced4da;
             border-radius: 4px;
@@ -145,6 +145,15 @@
         }
         .copy-button i {
             font-size: 1.1em;
+        }
+        #sll-value {
+            margin-top: 10px;
+            padding: 10px;
+            text-align: center;
+            font-weight: bold;
+            border-radius: 4px;
+            color: white;
+            background-color: #28a745; /* Inicialmente verde, será alterado dinamicamente */
         }
 
         /* Media Queries para Responsividade */
@@ -258,9 +267,22 @@
                 </label>
                 <input type="text" id="station_name" value="Station">
 
+                <label for="phi_angle">
+                    Ângulo Phi (graus):
+                    <span>Define o ângulo Phi para o cálculo do AF. Intervalo de -180 a 180.</span>
+                </label>
+                <select id="phi_angle">
+                    <!-- Opções de ângulos serão adicionadas aqui -->
+                </select>
+
                 <button onclick="generatePlot()">Gerar Station</button>
 
                 <div id="message-container"></div>
+
+                <div id="sll-container">
+                    <button onclick="calculateAndDisplaySLL()">Calcular SLL</button>
+                    <div id="sll-value"></div>
+                </div>
             </div>
 
             <div class="plot-container">
@@ -281,14 +303,103 @@
         const N = 2;
         const M = 8;
 
-        // Cria o array do tile
-        let tile_array = createPlanarArray(dx, dy, N, M);
-        tile_array = tile_array.map(point => [point[0] - tile_array.reduce((sum, p) => sum + p[0], 0) / tile_array.length, point[1] - tile_array.reduce((sum, p) => sum + p[1], 0) / tile_array.length]);
+        // ==================== Dados e Cache ====================
+        const dataCache = {};
+        const arrangementCache = {};
 
-        const tile_size_x = Math.max(...tile_array.map(p => p[0])) - Math.min(...tile_array.map(p => p[0]));
-        const tile_size_y = Math.max(...tile_array.map(p => p[1])) - Math.min(...tile_array.map(p => p[1]));
-        const tile_size = Math.sqrt(tile_size_x ** 2 + tile_size_y ** 2);
+        const baseUrl = 'https://geovannisz.github.io/spiral-arrangement-of-tiles/';
 
+        async function readTable(filePath) {
+            if (dataCache[filePath]) {
+                return dataCache[filePath];
+            }
+
+            const response = await fetch(filePath);
+            const csvText = await response.text();
+            const data = parseCSV(csvText);
+
+            dataCache[filePath] = data;
+            return data;
+        }
+
+        function parseCSV(csvText) {
+            const lines = csvText.trim().split('\\n');
+            const headers = lines[0].split(',').map(header => header.trim());
+
+            const data = [];
+            for (let i = 1; i < lines.length; i++) {
+                const values = lines[i].split(',').map(value => parseFloat(value.trim()));
+                const row = {};
+                for (let j = 0; j < headers.length; j++) {
+                    row[headers[j]] = values[j];
+                }
+                data.push(row);
+            }
+
+            return data;
+        }
+        
+        // ==================== Funções para Ângulos Phi ====================
+        function populatePhiDropdown() {
+            const select = document.getElementById('phi_angle');
+            select.innerHTML = '';
+            for (let phi = -180; phi <= 180; phi++) {
+                const option = document.createElement('option');
+                option.value = phi;
+                option.text = phi;
+                select.appendChild(option);
+            }
+            select.value = 90; // Valor padrão
+        }
+
+        populatePhiDropdown();
+
+        // ==================== Funções para Calcular AF ====================
+        function computeAF(theta, phi, array, k = 2 * Math.PI / 300, theta_0 = 0, phi_0 = 0, centralize = true, initial_phase = null, normalize = false) {
+            // Converte ângulos para radianos
+            const thetaRad = theta.map(t => t * Math.PI / 180);
+            const phiRad = phi.map(p => p * Math.PI / 180);
+            const theta0Rad = theta_0 * Math.PI / 180;
+            const phi0Rad = phi_0 * Math.PI / 180;
+
+            // Vetor de varredura
+            const scanVector = [Math.sin(theta0Rad) * Math.cos(phi0Rad), Math.sin(theta0Rad) * Math.sin(phi0Rad), Math.cos(theta0Rad)];
+
+            // Centraliza o array
+            if (centralize) {
+                const centerX = array.reduce((sum, p) => sum + p[0], 0) / array.length;
+                const centerY = array.reduce((sum, p) => sum + p[1], 0) / array.length;
+                const centerZ = array.reduce((sum, p) => sum + p[2], 0) / array.length;
+                array = array.map(p => [p[0] - centerX, p[1] - centerY, p[2] - centerZ]);
+            }
+
+            // Pré-calcula os vetores de observação
+            const obsVectors = [];
+            for (let i = 0; i < thetaRad.length; i++) {
+                obsVectors.push([Math.sin(thetaRad[i]) * Math.cos(phiRad[i]), Math.sin(thetaRad[i]) * Math.sin(phiRad[i]), Math.cos(thetaRad[i])]);
+            }
+
+            // Calcula a diferença entre os vetores de observação e o vetor de varredura
+            const diffs = obsVectors.map(obs => [obs[0] - scanVector[0], obs[1] - scanVector[1], obs[2] - scanVector[2]]);
+
+            // Calcula o AF
+            const AF = [];
+            for (let i = 0; i < diffs.length; i++) {
+                let sum = 0;
+                for (let j = 0; j < array.length; j++) {
+                    let phase = k * (diffs[i][0] * array[j][0] + diffs[i][1] * array[j][1] + diffs[i][2] * array[j][2]);
+                    if (initial_phase !== null) {
+                        phase += initial_phase[j] * Math.PI / 180;
+                    }
+                    sum += Math.exp(1j * phase);
+                }
+                AF.push(sum);
+            }
+
+            return normalize ? AF.map(val => val / array.length) : AF;
+        }
+
+        // ==================== Funções Auxiliares ====================
         function createPlanarArray(dx, dy, N, M) {
             const array = [];
             for (let i = 0; i < N; i++) {
@@ -309,7 +420,7 @@
                 point[0] * R[1][0] + point[1] * R[1][1]
             ]);
         }
-        
+
         function isCollision(tile1_center, tile1_angle, tile2_center, tile2_angle, tile_array) {
             const tile_size_x = Math.max(...tile_array.map(p => p[0])) - Math.min(...tile_array.map(p => p[0]));
             const tile_size_y = Math.max(...tile_array.map(p => p[1])) - Math.min(...tile_array.map(p => p[1]));
@@ -352,16 +463,12 @@
                 return false;
             }
         
-            // Verifica se há colisão
             if (!(separatingAxis(hitbox1, hitbox2) || separatingAxis(hitbox2, hitbox1))) {
-                // Se houver colisão, calcula o centro do tile
                 const tileCenter = [(hitbox2[0][0] + hitbox2[2][0]) / 2, (hitbox2[0][1] + hitbox2[2][1]) / 2];
                 
-                // Retorna true para indicar colisão, e as coordenadas do centro do tile
                 return { collision: true, tileCenter: tileCenter };
             }
         
-            // Se não houver colisão, retorna false e null para as coordenadas do centro
             return { collision: false, tileCenter: null };
         }
 
@@ -437,7 +544,83 @@
             return tile_arrangement;
         }
 
-        function generatePlot() {
+        // ==================== Funções para Calcular e Exibir SLL ====================
+        function calculateSLL(theta, af) {
+            const mainPeakIndex = theta.findIndex(angle => angle === 0);
+            const mainPeakValue = af[mainPeakIndex];
+
+            const peaks = [];
+            for (let i = 1; i < af.length - 1; i++) {
+                if (af[i] > af[i - 1] && af[i] > af[i + 1] && i !== mainPeakIndex) {
+                    peaks.push(af[i]);
+                }
+            }
+
+            peaks.sort((a, b) => b - a);
+
+            if (peaks.length < 1) {
+                return null;
+            }
+
+            const sll = peaks[0] / mainPeakValue;
+            return 20 * Math.log10(sll);
+        }
+
+        function updateSLLDisplay(sllValue) {
+            const sllDisplay = document.getElementById('sll-value');
+            sllDisplay.textContent = sllValue !== null ? `SLL: ${sllValue.toFixed(2)} dB` : 'SLL não pode ser calculado';
+
+            // Atualiza a cor de fundo com base no valor de SLL
+            const sllColor = getSLLColor(sllValue);
+            sllDisplay.style.backgroundColor = sllColor;
+        }
+
+        function getSLLColor(sllValue) {
+            if (sllValue === null) return '#777'; // Cor para SLL não calculável
+
+            const minSLL = -30;
+            const maxSLL = 0;
+            const green = [40, 167, 69]; // RGB para verde
+            const red = [220, 53, 69];   // RGB para vermelho
+
+            const ratio = (sllValue - minSLL) / (maxSLL - minSLL);
+            const color = [
+                Math.round(red[0] + ratio * (green[0] - red[0])),
+                Math.round(red[1] + ratio * (green[1] - red[1])),
+                Math.round(red[2] + ratio * (green[2] - red[2]))
+            ];
+
+            return `rgb(${color[0]}, ${color[1]}, ${color[2]})`;
+        }
+
+        async function calculateAndDisplaySLL() {
+            const selectedPhi = parseFloat(document.getElementById('phi_angle').value);
+            const stationData = await getStationData();
+
+            if (!stationData) {
+                updateSLLDisplay(null);
+                return;
+            }
+
+            const theta = stationData.theta;
+            const af = stationData.af;
+
+            const thetaFiltered = [];
+            const afFiltered = [];
+
+            for (let i = 0; i < theta.length; i++) {
+                if (stationData.phi[i] === selectedPhi) {
+                    thetaFiltered.push(theta[i]);
+                    afFiltered.push(Math.abs(af[i]));
+                }
+            }
+
+            const sllValue = calculateSLL(thetaFiltered, afFiltered);
+            updateSLLDisplay(sllValue);
+        }
+
+        // ==================== Função para Obter Dados da Estação ====================
+        async function getStationData() {
             const numSpirals = parseFloat(document.getElementById('num_spirals').value);
             const tilesPerSpiral = parseFloat(document.getElementById('tiles_per_spiral').value);
             const baseRadius = parseFloat(document.getElementById('base_radius').value);
@@ -450,26 +633,55 @@
             const centerTile = document.getElementById('center_tile').checked;
             const stationName = document.getElementById('station_name').value;
 
-            // Adaptação dos parâmetros para a função
+            const arrangementKey = JSON.stringify({
+                numSpirals, tilesPerSpiral, baseRadius, radiusGrowthFactor,
+                angleOffsetFactor, angleVariationFactor, exponentialRadiusFactor,
+                exponentialAngleFactor, rotationPerSpiral, centerTile, stationName
+            });
+
+            if (arrangementCache[arrangementKey]) {
+                return arrangementCache[arrangementKey];
+            }
+
+            const tile_array = createPlanarArray(dx, dy, N, M);
+            const tile_size_x = Math.max(...tile_array.map(p => p[0])) - Math.min(...tile_array.map(p => p[0]));
+            const tile_size_y = Math.max(...tile_array.map(p => p[1])) - Math.min(...tile_array.map(p => p[1]));
+            const tile_size = Math.sqrt(tile_size_x ** 2 + tile_size_y ** 2);
+
             const adaptedBaseRadius = baseRadius * tile_size;
             const adaptedRadiusGrowthFactor = radiusGrowthFactor * tile_size;
 
             const tileArrangement = generateSpiralTileArrangement(
-                numSpirals,
-                tilesPerSpiral,
-                adaptedBaseRadius,
-                adaptedRadiusGrowthFactor,
-                angleOffsetFactor,
-                angleVariationFactor,
-                exponentialRadiusFactor,
-                exponentialAngleFactor,
-                rotationPerSpiral,
-                centerTile,
-                stationName
+                numSpirals, tilesPerSpiral, adaptedBaseRadius, adaptedRadiusGrowthFactor,
+                angleOffsetFactor, angleVariationFactor, exponentialRadiusFactor,
+                exponentialAngleFactor, rotationPerSpiral, centerTile, stationName
             );
 
             const [station, collisionMessages] = createStationArray(tileArrangement, tile_array);
+            const data = await readTable(baseUrl + 'data/rE_table_vivaldi.csv');
 
+            if (!data || data.length === 0) {
+                console.error('Erro ao ler os dados da tabela.');
+                return null;
+            }
+
+            const theta = data.map(row => row['Theta [deg]']);
+            const phi = data.map(row => row['Phi [deg]']);
+
+            const af = computeAF(theta, phi, station.map(p => [p[0], p[1], 0]));
+
+            const stationData = { theta, phi, af: af.map(val => Math.abs(val)), station, collisionMessages };
+            arrangementCache[arrangementKey] = stationData;
+
+            return stationData;
+        }
+
+        // ==================== Funções para Plotagem ====================
+        async function generatePlot() {
+            const stationData = await getStationData();
+            if (!stationData) return;
+
+            const { station, collisionMessages, stationName } = stationData;
             displayPlot(station, collisionMessages, stationName);
             updateCodeSnippet();
         }
@@ -500,7 +712,6 @@
 
             Plotly.newPlot('plot', plotData, layout);
 
-            // Exibe mensagens de colisão
             const messageContainer = document.getElementById('message-container');
             messageContainer.innerHTML = '';
             if (collisionMessages && collisionMessages.length > 0) {
@@ -560,7 +771,7 @@
             copyButton.classList.remove('fa-paste');
             copyButton.classList.add('fa-check');
 
-            clearTimeout(copyIconTimeout);
+            clearTimeout(            copyIconTimeout);
             copyIconTimeout = setTimeout(() => {
                 copyButton.classList.remove('fa-check');
                 copyButton.classList.add('fa-paste');
