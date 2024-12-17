@@ -496,7 +496,7 @@ function applyAFOnField(field, af, rotatedFields, theta, phi) {
 
 function displayFieldPlot(af, thetaValues, stationName, phiAngle) {
     const fieldPlotContainer = document.getElementById('field-plot-container');
-    fieldPlotContainer.innerHTML = '';
+    fieldPlotContainer.innerHTML = ''; // Limpa o conteúdo anterior
 
     const afValues = af.map(value => numeric.abs(value));
 
@@ -519,9 +519,8 @@ function displayFieldPlot(af, thetaValues, stationName, phiAngle) {
         autosize: true
     };
 
-    Plotly.newPlot('field-plot-container', plotData, layout);
+    Plotly.newPlot(fieldPlotContainer, plotData, layout);
 }
-
 function calculateSLL(theta, af, phiAngle) {
     const afFiltered = [];
     const thetaFiltered = [];
