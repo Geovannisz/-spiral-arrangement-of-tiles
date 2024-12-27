@@ -299,22 +299,11 @@
             return array;
         }
 
-        function rotatePoints(points, angle) {
-            const R = [
-                [Math.cos(angle), -Math.sin(angle)],
-                [Math.sin(angle), Math.cos(angle)]
-            ];
-            return points.map(point => [
-                point[0] * R[0][0] + point[1] * R[0][1],
-                point[0] * R[1][0] + point[1] * R[1][1]
-            ]);
-        }
-        
-        function isCollision(tile1_center, tile1_angle, tile2_center, tile2_angle, tile_array) {
+        function isCollision(tile1_center, tile2_center, tile_array) {
             const tile_size_x = Math.max(...tile_array.map(p => p[0])) - Math.min(...tile_array.map(p => p[0]));
             const tile_size_y = Math.max(...tile_array.map(p => p[1])) - Math.min(...tile_array.map(p => p[1]));
         
-            function createHitbox(center, angle, size_x, size_y) {
+            function createHitbox(center, size_x, size_y) {
                 const half_x = size_x / 2;
                 const half_y = size_y / 2;
         
@@ -325,12 +314,11 @@
                     [-half_x, half_y]
                 ];
         
-                const rotated_corners = rotatePoints(corners, angle);
-                return rotated_corners.map(corner => [corner[0] + center[0], corner[1] + center[1]]);
+                return corners.map(corner => [corner[0] + center[0], corner[1] + center[1]]);
             }
         
-            const hitbox1 = createHitbox(tile1_center, tile1_angle, tile_size_x, tile_size_y);
-            const hitbox2 = createHitbox(tile2_center, tile2_angle, tile_size_x, tile_size_y);
+            const hitbox1 = createHitbox(tile1_center, tile_size_x, tile_size_y);
+            const hitbox2 = createHitbox(tile2_center, tile_size_x, tile_size_y);
         
             function separatingAxis(hitbox1, hitbox2) {
                 for (let i = 0; i < 4; i++) {
@@ -352,16 +340,11 @@
                 return false;
             }
         
-            // Verifica se há colisão
             if (!(separatingAxis(hitbox1, hitbox2) || separatingAxis(hitbox2, hitbox1))) {
-                // Se houver colisão, calcula o centro do tile
                 const tileCenter = [(hitbox2[0][0] + hitbox2[2][0]) / 2, (hitbox2[0][1] + hitbox2[2][1]) / 2];
-                
-                // Retorna true para indicar colisão, e as coordenadas do centro do tile
                 return { collision: true, tileCenter: tileCenter };
             }
         
-            // Se não houver colisão, retorna false e null para as coordenadas do centro
             return { collision: false, tileCenter: null };
         }
 
@@ -374,15 +357,13 @@
             ]);
         
             for (let i = 0; i < tiles_config.length; i++) {
-                const tile_center = tiles_config[i][0];
-                const tile_angle = tiles_config[i][1];
+                const tile_center = tiles_config[i];
                 let valid_position = true;
                 let collisionInfo = null;
         
                 for (let j = 0; j < i; j++) {
-                    const existing_tile_center = tiles_config[j][0];
-                    const existing_tile_angle = tiles_config[j][1];
-                    collisionInfo = isCollision(tile_center, tile_angle, existing_tile_center, existing_tile_angle, tile_array);
+                    const existing_tile_center = tiles_config[j];
+                    collisionInfo = isCollision(tile_center, existing_tile_center, tile_array);
                     if (collisionInfo.collision) {
                         valid_position = false;
                         break;
@@ -390,8 +371,7 @@
                 }
         
                 if (valid_position) {
-                    const rotated_tile = rotatePoints(tile_array_centered, tile_angle);
-                    const translated_tile = rotated_tile.map(point => [point[0] + tile_center[0], point[1] + tile_center[1]]);
+                    const translated_tile = tile_array_centered.map(point => [point[0] + tile_center[0], point[1] + tile_center[1]]);
                     translated_tile.forEach(point => array_tot.push([...point, 0]));
                 } else {
                     collision_messages.push(`Colisão detectada no tile ${i + 1}. Coordenadas do centro: (${collisionInfo.tileCenter[0].toFixed(2)}, ${collisionInfo.tileCenter[1].toFixed(2)}). Posição ignorada.`);
@@ -417,7 +397,7 @@
             const tile_arrangement = [];
 
             if (center_tile) {
-                tile_arrangement.push([[0, 0], 0]);
+                tile_arrangement.push([0, 0]);
             }
 
             for (let p = 0; p < num_spirals; p++) {
@@ -428,9 +408,8 @@
 
                     const x = r * Math.cos(angle);
                     const y = r * Math.sin(angle);
-                    const orientation_angle = angle + Math.PI / 2;
 
-                    tile_arrangement.push([[x, y], orientation_angle]);
+                    tile_arrangement.push([x, y]);
                 }
             }
 
@@ -450,7 +429,6 @@
             const centerTile = document.getElementById('center_tile').checked;
             const stationName = document.getElementById('station_name').value;
 
-            // Adaptação dos parâmetros para a função
             const adaptedBaseRadius = baseRadius * tile_size;
             const adaptedRadiusGrowthFactor = radiusGrowthFactor * tile_size;
 
@@ -500,7 +478,6 @@
 
             Plotly.newPlot('plot', plotData, layout);
 
-            // Exibe mensagens de colisão
             const messageContainer = document.getElementById('message-container');
             messageContainer.innerHTML = '';
             if (collisionMessages && collisionMessages.length > 0) {
