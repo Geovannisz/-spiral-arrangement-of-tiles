@@ -272,6 +272,11 @@
             <textarea id="code-snippet" readonly></textarea>
             <button class="copy-button" onclick="copySnippet()"><i class="fas fa-paste"></i></button>
         </div>
+
+        <div class="snippet-container">
+            <textarea id="json-snippet" readonly></textarea>
+            <button class="copy-button" onclick="copyJsonSnippet()"><i class="fas fa-paste"></i></button>
+        </div>
     </div>
 
     <script>
@@ -450,6 +455,7 @@
 
             displayPlot(station, collisionMessages, stationName);
             updateCodeSnippet();
+            updateJsonSnippet();
         }
 
         function displayPlot(stationData, collisionMessages, stationName) {
@@ -528,6 +534,35 @@ array_tiles_station = generate_spiral_tile_arrangement(
             document.getElementById('code-snippet').value = snippet;
         }
 
+        function updateJsonSnippet() {
+            const numSpirals = document.getElementById('num_spirals').value;
+            const tilesPerSpiral = document.getElementById('tiles_per_spiral').value;
+            const baseRadius = document.getElementById('base_radius').value;
+            const radiusGrowthFactor = document.getElementById('radius_growth_factor').value;
+            const angleOffsetFactor = document.getElementById('angle_offset_factor').value;
+            const angleVariationFactor = document.getElementById('angle_variation_factor').value;
+            const exponentialRadiusFactor = document.getElementById('exponential_radius_factor').value;
+            const exponentialAngleFactor = document.getElementById('exponential_angle_factor').value;
+            const rotationPerSpiral = document.getElementById('rotation_per_spiral').value;
+            const centerTile = document.getElementById('center_tile').checked ? 'true' : 'false';
+            const stationName = document.getElementById('station_name').value;
+
+            const jsonSnippet = `{
+    'num_spirals': ${numSpirals},
+    'tiles_per_spiral': ${tilesPerSpiral},
+    'base_radius': ${baseRadius} * tile_size,
+    'radius_growth_factor': ${radiusGrowthFactor} * tile_size,
+    'angle_offset_factor': ${angleOffsetFactor},
+    'angle_variation_factor': ${angleVariationFactor},
+    'exponential_radius_factor': ${exponentialRadiusFactor},
+    'exponential_angle_factor': ${exponentialAngleFactor},
+    'rotation_per_spiral': ${rotationPerSpiral},
+    'center_tile': ${centerTile},
+    'station_name': '${stationName}'
+}`;
+            document.getElementById('json-snippet').value = jsonSnippet;
+        }
+
         let copyIconTimeout;
 
         function copySnippet() {
@@ -536,6 +571,22 @@ array_tiles_station = generate_spiral_tile_arrangement(
             document.execCommand('copy');
 
             const copyButton = document.querySelector('.copy-button i');
+            copyButton.classList.remove('fa-paste');
+            copyButton.classList.add('fa-check');
+
+            clearTimeout(copyIconTimeout);
+            copyIconTimeout = setTimeout(() => {
+                copyButton.classList.remove('fa-check');
+                copyButton.classList.add('fa-paste');
+            }, 2000);
+        }
+
+        function copyJsonSnippet() {
+            const snippetTextarea = document.getElementById('json-snippet');
+            snippetTextarea.select();
+            document.execCommand('copy');
+
+            const copyButton = document.querySelector('.snippet-container:nth-child(2) .copy-button i');
             copyButton.classList.remove('fa-paste');
             copyButton.classList.add('fa-check');
 
